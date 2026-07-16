@@ -4,6 +4,7 @@
   "description": "Trassit Companion — Smart Urban Transit Companion Platform",
   "main": "src/phase0_sourcing/index.js",
   "scripts": {
+    "start": "node src/phase1_realtime/subphase_1d_redis_api/server.js",
     "phase0": "node src/phase0_sourcing/index.js",
     "phase0:download": "node src/phase0_sourcing/open_data_downloader.js",
     "phase0:imd": "node src/phase0_sourcing/imd_scraper.js",

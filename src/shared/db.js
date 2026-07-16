@@ -9,16 +9,26 @@
 const { Pool } = require("pg");
 require("dotenv").config();
 
-const pool = new Pool({
-  host: process.env.PGHOST || "localhost",
-  port: parseInt(process.env.PGPORT || "5432", 10),
-  user: process.env.PGUSER || "trassit",
-  password: process.env.PGPASSWORD || "trassit_dev",
-  database: process.env.PGDATABASE || "trassit_db",
-  max: parseInt(process.env.PG_POOL_MAX || "10", 10),
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-});
+const connectionString = process.env.DATABASE_URL;
+
+const pool = connectionString
+  ? new Pool({
+      connectionString,
+      max: parseInt(process.env.PG_POOL_MAX || "10", 10),
+      ssl: connectionString.includes("localhost") || connectionString.includes("127.0.0.1")
+        ? false
+        : { rejectUnauthorized: false },
+    })
+  : new Pool({
+      host: process.env.PGHOST || "localhost",
+      port: parseInt(process.env.PGPORT || "5432", 10),
+      user: process.env.PGUSER || "trassit",
+      password: process.env.PGPASSWORD || "trassit_dev",
+      database: process.env.PGDATABASE || "trassit_db",
+      max: parseInt(process.env.PG_POOL_MAX || "10", 10),
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+    });
 
 pool.on("error", (err) => {
   console.error("[DB] Unexpected pool error:", err.message);
