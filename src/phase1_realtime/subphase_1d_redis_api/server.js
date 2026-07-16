@@ -594,11 +594,14 @@ async function runLiveTelemetrySimulator() {
   }
 }
 
-// Start listening
-const server = app.listen(PORT, () => {
-  console.log(`[Express] Trassit Companion API Server running on port ${PORT}`);
-  // Start simulator after connection is established
-  setTimeout(runLiveTelemetrySimulator, 1000);
-});
+// Start listening if run directly
+let server;
+if (require.main === module) {
+  server = app.listen(PORT, () => {
+    console.log(`[Express] Trassit Companion API Server running on port ${PORT}`);
+    // Start simulator after connection is established
+    setTimeout(runLiveTelemetrySimulator, 1000);
+  });
+}
 
 module.exports = { app, server };

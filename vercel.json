@@ -1,0 +1,17 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://YOUR_NETLIFY_APP_URL/api/v1/:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://YOUR_NETLIFY_APP_URL/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/src/phase1_realtime/subphase_1e_map_ui/public/$1"
+    }
+  ]
+}

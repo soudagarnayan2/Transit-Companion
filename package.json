@@ -14,7 +14,13 @@
     "phase1:rt": "node src/phase1_realtime/subphase_1c_live_processor/rt_run.js",
     "phase1:api": "node src/phase1_realtime/subphase_1d_redis_api/server.js"
   },
-  "keywords": ["transit", "public-transport", "india", "gtfs", "scraping"],
+  "keywords": [
+    "transit",
+    "public-transport",
+    "india",
+    "gtfs",
+    "scraping"
+  ],
   "license": "MIT",
   "dependencies": {
     "adm-zip": "^0.5.12",
@@ -25,7 +31,7 @@
     "gtfs-realtime-bindings": "^0.0.6",
     "ioredis": "^5.4.0",
     "pg": "^8.13.0",
+    "serverless-http": "^4.0.0",
     "xml2js": "^0.6.2"
   }
 }
-
