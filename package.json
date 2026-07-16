@@ -1,0 +1,31 @@
+{
+  "name": "trassit-companion",
+  "version": "0.2.0",
+  "description": "Trassit Companion — Smart Urban Transit Companion Platform",
+  "main": "src/phase0_sourcing/index.js",
+  "scripts": {
+    "phase0": "node src/phase0_sourcing/index.js",
+    "phase0:download": "node src/phase0_sourcing/open_data_downloader.js",
+    "phase0:imd": "node src/phase0_sourcing/imd_scraper.js",
+    "phase0:twitter": "node src/phase0_sourcing/state_rtc_listener.js",
+    "migrate": "node src/phase1_realtime/subphase_1a_db_setup/migrate.js",
+    "healthcheck": "node src/phase1_realtime/subphase_1a_db_setup/healthcheck.js",
+    "phase1:import": "node src/phase1_realtime/subphase_1b_static_parser/import_cli.js",
+    "phase1:rt": "node src/phase1_realtime/subphase_1c_live_processor/rt_run.js",
+    "phase1:api": "node src/phase1_realtime/subphase_1d_redis_api/server.js"
+  },
+  "keywords": ["transit", "public-transport", "india", "gtfs", "scraping"],
+  "license": "MIT",
+  "dependencies": {
+    "adm-zip": "^0.5.12",
+    "axios": "^1.7.0",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.4.0",
+    "express": "^4.19.2",
+    "gtfs-realtime-bindings": "^0.0.6",
+    "ioredis": "^5.4.0",
+    "pg": "^8.13.0",
+    "xml2js": "^0.6.2"
+  }
+}
+

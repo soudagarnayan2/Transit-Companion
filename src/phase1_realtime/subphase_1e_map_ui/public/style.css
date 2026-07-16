@@ -1,0 +1,636 @@
+/* Trassit Companion — Map CSS Design System */
+
+:root {
+  --bg-primary: #0f172a;
+  --bg-secondary: rgba(30, 41, 59, 0.7);
+  --accent-color: #3b82f6;
+  --accent-success: #10b981;
+  --accent-warning: #f59e0b;
+  --accent-danger: #ef4444;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(16px);
+  --shadow-main: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3 {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+}
+
+/* Service Alert Banner */
+#alerts-banner {
+  background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease;
+}
+
+#alerts-banner.hidden {
+  transform: translateY(-100%);
+  display: none;
+}
+
+#alerts-banner .icon {
+  font-size: 1.2rem;
+}
+
+#close-alert-btn {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  font-size: 1.5rem;
+  margin-left: auto;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+#close-alert-btn:hover {
+  opacity: 1;
+}
+
+/* Main Container Layout */
+#app-container {
+  display: flex;
+  flex: 1;
+  position: relative;
+  height: 100%;
+}
+
+/* Sidebar Dashboard Styles */
+#sidebar {
+  width: 400px;
+  background-color: var(--bg-secondary);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-right: 1px solid var(--border-color);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-main);
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  margin: 16px;
+  border-radius: 16px;
+  height: calc(100% - 32px);
+  overflow: hidden;
+}
+
+header {
+  padding: 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-dot {
+  width: 12px;
+  height: 12px;
+  background-color: var(--accent-color);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--accent-color);
+}
+
+.logo h1 {
+  font-size: 1.8rem;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.controls {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.controls label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.controls select {
+  background-color: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.controls select:focus {
+  border-color: var(--accent-color);
+}
+
+/* Info Panel / Dynamic States */
+#info-panel {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  border-top: 1px solid var(--border-color);
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.empty-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  max-width: 280px;
+}
+
+.empty-message svg {
+  opacity: 0.5;
+}
+
+#panel-content h2 {
+  font-size: 1.5rem;
+  margin-bottom: 16px;
+}
+
+#arrivals-container h3 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+
+#arrivals-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.arrival-card {
+  background-color: rgba(15, 23, 42, 0.4);
+  border: 1px solid var(--border-color);
+  padding: 14px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.arrival-card:hover {
+  transform: translateX(4px);
+  background-color: rgba(15, 23, 42, 0.6);
+}
+
+.route-badge {
+  background-color: var(--accent-color);
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  min-width: 48px;
+  text-align: center;
+}
+
+.route-desc {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.route-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.route-dir {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.arrival-time-block {
+  text-align: right;
+}
+
+.eta {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--accent-success);
+}
+
+.eta.delayed {
+  color: var(--accent-warning);
+}
+
+.scheduled-lbl {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Footer & Status Indicators */
+footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--text-muted);
+}
+
+.status-indicator.live {
+  background-color: var(--accent-success);
+  box-shadow: 0 0 8px var(--accent-success);
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.offline {
+  background-color: var(--accent-danger);
+  box-shadow: 0 0 8px var(--accent-danger);
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Leaflet Map custom styles */
+#map {
+  flex: 1;
+  height: 100%;
+  z-index: 1;
+}
+
+.leaflet-bar {
+  border: none !important;
+  box-shadow: var(--shadow-main) !important;
+}
+
+.leaflet-bar a {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-main) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  backdrop-filter: var(--glass-blur);
+}
+
+.leaflet-bar a:hover {
+  background-color: var(--bg-primary) !important;
+}
+
+/* Custom Marker Styling */
+.custom-station-icon {
+  background: var(--bg-primary);
+  border: 2px solid var(--accent-color);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--accent-color);
+}
+
+.custom-bus-icon {
+  background: var(--accent-success);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: 'Outfit', sans-serif;
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+
+/* Crowdsourcing Report Form */
+.crowdsource-section {
+  padding: 20px 24px;
+  border-top: 1px solid var(--border-color);
+  background-color: rgba(15, 23, 42, 0.2);
+}
+
+.crowdsource-section h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+.report-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#report-input {
+  background-color: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 10px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  resize: none;
+  height: 64px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#report-input:focus {
+  border-color: var(--accent-color);
+}
+
+#submit-report-btn {
+  background: linear-gradient(135deg, var(--accent-color), #2563eb);
+  border: none;
+  color: #fff;
+  padding: 10px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  transition: transform 0.1s, opacity 0.2s;
+}
+
+#submit-report-btn:active {
+  transform: scale(0.98);
+}
+
+#submit-report-btn:hover {
+  opacity: 0.95;
+}
+
+#report-status {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#report-status.success {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--accent-success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+#report-status.error {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--accent-danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Occupancy Badge Styling */
+.occ-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.occ-badge.low {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: var(--accent-success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.occ-badge.medium {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: var(--accent-warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.occ-badge.high {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: var(--accent-danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Navigation Mode Tabs */
+.mode-tabs {
+  display: flex;
+  background-color: rgba(15, 23, 42, 0.4);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 14px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: color 0.2s, border-bottom 0.2s;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-btn.active {
+  color: var(--accent-color);
+  border-bottom: 2px solid var(--accent-color);
+}
+
+.tab-btn:hover {
+  color: var(--text-main);
+}
+
+/* Planner Controls */
+#planner-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.helper-text {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group input {
+  background-color: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+#find-multimodal-btn {
+  background: linear-gradient(135deg, var(--accent-color), #2563eb);
+  border: none;
+  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+#find-multimodal-btn:hover {
+  opacity: 0.95;
+}
+
+/* Multimodal Route Summary */
+.multimodal-summary {
+  display: flex;
+  justify-content: space-around;
+  background-color: rgba(15, 23, 42, 0.3);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px dashed var(--border-color);
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  text-align: center;
+}
+
+.summary-val {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--accent-color);
+}
+
+.summary-lbl {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.leg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  list-style: none;
+}
+
+.leg-card {
+  background-color: rgba(15, 23, 42, 0.4);
+  border-left: 4px solid var(--text-muted);
+  border-top: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px;
+  border-radius: 0 8px 8px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.leg-card.walk {
+  border-left-color: #64748b;
+}
+
+.leg-card.transit {
+  border-left-color: var(--accent-color);
+}
+
+.leg-card.scooter {
+  border-left-color: var(--accent-success);
+}
+
+.leg-icon {
+  font-size: 1.4rem;
+  margin-right: 10px;
+}
+
+.leg-info {
+  flex: 1;
+}
+
+.leg-title {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.leg-detail {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.leg-metrics {
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+

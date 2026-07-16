@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transit Companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1119;
+    --frame:#15181F;
+    --surface:#1B1F2B;
+    --surface-2:#232838;
+    --border:#2C3244;
+    --text:#EDEFF5;
+    --text-muted:#8B93A8;
+    --text-faint:#565E73;
+    --accent:#FFB627;
+    --accent-dim:#4A3B18;
+    --info:#4DA8FF;
+    --low:#3ED692;
+    --low-dim:#173328;
+    --med:#FFC94D;
+    --med-dim:#3A2E12;
+    --high:#FF5C6C;
+    --high-dim:#3A1A20;
+    --radius:16px;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 20% 0%, #1A2035 0%, transparent 45%),
+      radial-gradient(circle at 80% 100%, #191B2A 0%, transparent 50%),
+      var(--bg);
+    font-family:var(--font-body);
+    color:var(--text);
+    display:flex;
+    justify-content:center;
+    padding:28px 12px;
+    min-height:100vh;
+  }
+  .device{
+    width:100%;
+    max-width:412px;
+    background:var(--frame);
+    border-radius:36px;
+    border:1px solid #262B3A;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,0.7), inset 0 0 0 1px #0000;
+    padding:14px;
+    position:relative;
+  }
+  .screen{
+    background:var(--bg);
+    border-radius:26px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    min-height:780px;
+    position:relative;
+  }
+  .notch{
+    position:absolute;
+    top:14px; left:50%; transform:translateX(-50%);
+    width:110px; height:22px;
+    background:var(--frame);
+    border-radius:14px;
+    z-index:20;
+  }
+
+  /* ---- Top bar ---- */
+  .topbar{
+    padding:34px 18px 12px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .place{
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .place .eyebrow{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.08em;
+    color:var(--text-faint);
+    text-transform:uppercase;
+  }
+  .place .name{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:19px;
+  }
+  .icon-btn{
+    width:38px; height:38px;
+    border-radius:12px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text-muted);
+  }
+
+  /* ---- panels ---- */
+  .panel{ display:none; flex-direction:column; flex:1; padding:4px 18px 100px; overflow-y:auto;}
+  .panel.active{ display:flex; }
+  .section-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.09em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    margin:18px 2px 10px;
+  }
+
+  /* ---- Departure board (signature element) ---- */
+  .board{
+    background:linear-gradient(180deg, #171B27 0%, #12151F 100%);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:6px;
+  }
+  .board-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:14px 12px;
+    border-bottom:1px solid var(--border);
+  }
+  .board-row:last-child{ border-bottom:none; }
+  .route-chip{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:15px;
+    min-width:44px;
+    height:44px;
+    border-radius:10px;
+    background:var(--surface-2);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--text);
+    border:1px solid var(--border);
+    flex-shrink:0;
+  }
+  .route-info{ flex:1; min-width:0; }
+  .route-dest{
+    font-size:14px; font-weight:600; color:var(--text);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .route-meta{
+    display:flex; align-items:center; gap:6px;
+    margin-top:4px;
+  }
+  .crowd-meter{ display:flex; gap:2px; align-items:flex-end; }
+  .crowd-bar{ width:4px; border-radius:1px; background:var(--text-faint); }
+  .crowd-bar:nth-child(1){ height:5px; }
+  .crowd-bar:nth-child(2){ height:8px; }
+  .crowd-bar:nth-child(3){ height:11px; }
+  .crowd-label{ font-size:11px; color:var(--text-muted); font-family:var(--font-mono); }
+  .tag{
+    font-family:var(--font-mono);
+    font-size:10px;
+    padding:2px 6px;
+    border-radius:5px;
+    letter-spacing:0.03em;
+  }
+  .tag.delay{ background:var(--high-dim); color:var(--high); }
+  .tag.ontime{ background:var(--low-dim); color:var(--low); }
+  .eta{
+    font-family:var(--font-mono);
+    font-weight:600;
+    font-size:20px;
+    text-align:right;
+    min-width:62px;
+    flex-shrink:0;
+    letter-spacing:-0.02em;
+  }
+  .eta .unit{ font-size:11px; color:var(--text-muted); font-weight:500; margin-left:2px;}
+  .eta.flip{ animation:flip 0.4s ease; }
+  @keyframes flip{
+    0%{ opacity:0.3; transform:translateY(-3px); filter:blur(1px);}
+    100%{ opacity:1; transform:translateY(0); filter:blur(0);}
+  }
+
+  /* ---- generic card ---- */
+  .card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:12px;
+  }
+
+  /* ---- routes / planner ---- */
+  .field-group{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:4px;
+  }
+  .field{
+    display:flex; align-items:center; gap:10px;
+    padding:12px 12px;
+    border-bottom:1px solid var(--border);
+  }
+  .field:last-child{ border-bottom:none; }
+  .dot{ width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+  .dot.from{ background:var(--info); }
+  .dot.to{ background:var(--accent); }
+  .field input{
+    background:none; border:none; outline:none;
+    color:var(--text); font-family:var(--font-body); font-size:14px;
+    width:100%;
+  }
+  .field input::placeholder{ color:var(--text-faint); }
+  .go-btn{
+    width:100%;
+    margin-top:12px;
+    padding:13px;
+    border-radius:12px;
+    border:none;
+    background:var(--accent);
+    color:#1A1300;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:14px;
+    letter-spacing:0.01em;
+    cursor:pointer;
+  }
+  .go-btn:active{ opacity:0.85; }
+
+  .option{
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .option-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+  }
+  .option-time{ font-family:var(--font-display); font-weight:700; font-size:18px; }
+  .option-sub{ font-family:var(--font-mono); font-size:11px; color:var(--text-muted); }
+  .legs{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .leg{
+    display:flex; align-items:center; gap:6px;
+    font-size:12px; color:var(--text-muted);
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    padding:5px 9px;
+    border-radius:8px;
+  }
+  .leg b{ color:var(--text); font-weight:600; }
+  .arrow{ color:var(--text-faint); font-size:12px; }
+  .offline-pill{
+    display:inline-flex; align-items:center; gap:5px;
+    font-family:var(--font-mono);
+    font-size:10px;
+    color:var(--low);
+    background:var(--low-dim);
+    padding:3px 8px;
+    border-radius:6px;
+    margin-top:2px;
+    width:fit-content;
+  }
+  .offline-pill::before{ content:"●"; font-size:7px; }
+
+  /* ---- alerts ---- */
+  .alert{
+    display:flex; gap:12px; padding:14px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .alert:last-child{ border-bottom:none; }
+  .alert-icon{
+    width:34px; height:34px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; font-size:16px;
+  }
+  .alert-icon.high{ background:var(--high-dim); }
+  .alert-icon.med{ background:var(--med-dim); }
+  .alert-icon.info{ background:rgba(77,168,255,0.12); }
+  .alert-body{ flex:1; }
+  .alert-title{ font-size:13.5px; font-weight:600; }
+  .alert-desc{ font-size:12.5px; color:var(--text-muted); margin-top:3px; line-height:1.5; }
+  .alert-time{ font-family:var(--font-mono); font-size:10.5px; color:var(--text-faint); margin-top:6px; }
+
+  .toggle-row{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:13px 2px;
+    border-bottom:1px solid var(--border);
+  }
+  .toggle-row:last-child{ border-bottom:none; }
+  .toggle-title{ font-size:13.5px; font-weight:500; }
+  .toggle-sub{ font-size:11.5px; color:var(--text-muted); margin-top:2px; }
+  .switch{
+    width:42px; height:24px; border-radius:12px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    position:relative;
+    cursor:pointer;
+    flex-shrink:0;
+    transition:background 0.2s;
+  }
+  .switch.on{ background:var(--accent-dim); border-color:var(--accent); }
+  .switch::after{
+    content:"";
+    position:absolute; top:2px; left:2px;
+    width:18px; height:18px; border-radius:50%;
+    background:var(--text-faint);
+    transition:all 0.2s;
+  }
+  .switch.on::after{ left:20px; background:var(--accent); }
+
+  .empty-note{
+    font-size:12px; color:var(--text-faint); text-align:center; padding:20px 10px;
+    font-family:var(--font-mono);
+  }
+
+  /* ---- bottom nav ---- */
+  .tabbar{
+    position:absolute; bottom:0; left:0; right:0;
+    display:flex;
+    background:rgba(21,24,33,0.92);
+    backdrop-filter:blur(10px);
+    border-top:1px solid var(--border);
+    padding:10px 8px 16px;
+    z-index:10;
+  }
+  .tab{
+    flex:1;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    background:none; border:none; color:var(--text-faint);
+    font-family:var(--font-body); font-size:10.5px; font-weight:500;
+    cursor:pointer;
+    padding:4px 0;
+  }
+  .tab.active{ color:var(--accent); }
+  .tab svg{ width:20px; height:20px; }
+
+  .badge-count{
+    position:absolute; top:-2px; right:14px;
+    background:var(--high); color:#fff;
+    font-family:var(--font-mono); font-size:9px; font-weight:600;
+    width:15px; height:15px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .tab-wrap{ position:relative; flex:1; display:flex; }
+
+  ::-webkit-scrollbar{ width:0; height:0; }
+</style>
+</head>
+<body>
+
+<div class="device">
+  <div class="notch"></div>
+  <div class="screen">
+
+    <div class="topbar">
+      <div class="place">
+        <span class="eyebrow">Current stop</span>
+        <span class="name">5th Cross &amp; Park Rd</span>
+      </div>
+      <div class="icon-btn" id="refreshBtn" title="Refresh">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+      </div>
+    </div>
+
+    <!-- ================= HOME ================= -->
+    <div class="panel active" id="panel-home">
+      <div class="section-label">Next departures — live</div>
+      <div class="board" id="board"></div>
+
+      <div class="section-label">Why this crowd estimate</div>
+      <div class="card" style="font-size:12.5px; color:var(--text-muted); line-height:1.6;">
+        Estimates blend onboard sensor counts from the last 3 arrivals with how full this route usually runs at <span style="color:var(--text); font-family:var(--font-mono);" id="clockRef">--:--</span>. Expect drift of ±1 seat-band during rush hour.
+      </div>
+
+      <div class="section-label">Saved routes</div>
+      <div class="card">
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-title">12A · Home → Work</div>
+            <div class="toggle-sub">Weekday alerts on</div>
+          </div>
+          <div class="switch on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-title">45 · Work → Gym</div>
+            <div class="toggle-sub">Alerts off</div>
+          </div>
+          <div class="switch" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= ROUTES ================= -->
+    <div class="panel" id="panel-routes">
+      <div class="section-label">Plan a journey</div>
+      <div class="field-group">
+        <div class="field">
+          <div class="dot from"></div>
+          <input type="text" value="5th Cross & Park Rd" placeholder="From">
+        </div>
+        <div class="field">
+          <div class="dot to"></div>
+          <input type="text" placeholder="Where to?" id="destInput" value="Silk Board Junction">
+        </div>
+      </div>
+      <button class="go-btn" id="planBtn">Find routes</button>
+
+      <div class="section-label">3 options found</div>
+
+      <div class="card option">
+        <div class="option-head">
+          <span class="option-time">28 min</span>
+          <span class="option-sub">FASTEST</span>
+        </div>
+        <div class="legs">
+          <div class="leg">🚶 <b>4 min</b></div>
+          <span class="arrow">→</span>
+          <div class="leg">🚌 <b>12A</b> · 19 min</div>
+          <span class="arrow">→</span>
+          <div class="leg">🚶 <b>5 min</b></div>
+        </div>
+        <span class="offline-pill">Cached for offline use</span>
+      </div>
+
+      <div class="card option">
+        <div class="option-head">
+          <span class="option-time">33 min</span>
+          <span class="option-sub">LEAST CROWDED</span>
+        </div>
+        <div class="legs">
+          <div class="leg">🚶 <b>6 min</b></div>
+          <span class="arrow">→</span>
+          <div class="leg">🚌 <b>7X</b> · 22 min</div>
+          <span class="arrow">→</span>
+          <div class="leg">🚶 <b>5 min</b></div>
+        </div>
+        <span class="offline-pill">Cached for offline use</span>
+      </div>
+
+      <div class="card option">
+        <div class="option-head">
+          <span class="option-time">41 min</span>
+          <span class="option-sub">FEWER TRANSFERS</span>
+        </div>
+        <div class="legs">
+          <div class="leg">🚶 <b>3 min</b></div>
+          <span class="arrow">→</span>
+          <div class="leg">🚌 <b>45</b> · 12 min</div>
+          <span class="arrow">→</span>
+          <div class="leg">🚌 <b>12A</b> · 17 min</div>
+          <span class="arrow">→</span>
+          <div class="leg">🚶 <b>9 min</b></div>
+        </div>
+        <span class="offline-pill" style="color:var(--text-faint); background:var(--surface-2);">Needs connection to cache</span>
+      </div>
+    </div>
+
+    <!-- ================= ALERTS ================= -->
+    <div class="panel" id="panel-alerts">
+      <div class="section-label">Active alerts · 3</div>
+      <div class="card" style="padding:4px 16px;">
+        <div class="alert">
+          <div class="alert-icon high">⚠️</div>
+          <div class="alert-body">
+            <div class="alert-title">Route 12A diverted near Park Rd</div>
+            <div class="alert-desc">Road closure for repairs. Buses skip 2 stops and rejoin at Church Circle. Add ~6 min.</div>
+            <div class="alert-time">Updated 2 min ago</div>
+          </div>
+        </div>
+        <div class="alert">
+          <div class="alert-icon med">🐢</div>
+          <div class="alert-body">
+            <div class="alert-title">7X running behind schedule</div>
+            <div class="alert-desc">Heavy traffic on Outer Ring Road is adding 8–12 min to arrivals through the evening.</div>
+            <div class="alert-time">Updated 14 min ago</div>
+          </div>
+        </div>
+        <div class="alert">
+          <div class="alert-icon info">🛠️</div>
+          <div class="alert-body">
+            <div class="alert-title">Planned maintenance · Route 45</div>
+            <div class="alert-desc">Saturday 11pm–5am, replacement shuttle stops at the same locations every 20 min.</div>
+            <div class="alert-time">Posted yesterday</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Alert me for</div>
+      <div class="card">
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-title">Delays over 5 min</div>
+            <div class="toggle-sub">On routes you've saved</div>
+          </div>
+          <div class="switch on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-title">Crowd hits "standing room only"</div>
+            <div class="toggle-sub">15 min before your usual departure</div>
+          </div>
+          <div class="switch on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-title">Route diversions</div>
+            <div class="toggle-sub">All routes near saved stops</div>
+          </div>
+          <div class="switch" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= SAVED / OFFLINE ================= -->
+    <div class="panel" id="panel-saved">
+      <div class="section-label">Offline maps</div>
+      <div class="card">
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-title">Downtown &amp; commute corridor</div>
+            <div class="toggle-sub">42 MB · synced 3 hours ago</div>
+          </div>
+          <span class="offline-pill" style="margin-top:0;">Ready</span>
+        </div>
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-title">Full city network</div>
+            <div class="toggle-sub">190 MB · not downloaded</div>
+          </div>
+          <div class="icon-btn" style="width:34px;height:34px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v14"/><path d="m6 12 6 6 6-6"/><path d="M4 21h16"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="font-size:12px; color:var(--text-muted); line-height:1.6;">
+        Route plans and timetables in your offline packs still work without signal. Live crowd and delay data resumes the moment you're back online.
+      </div>
+
+      <div class="section-label">Saved stops</div>
+      <div class="card" style="padding:4px 16px;">
+        <div class="toggle-row">
+          <div class="toggle-title">5th Cross &amp; Park Rd</div>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-faint);">Home</span>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-title">Silk Board Junction</div>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-faint);">Work</span>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-title">Church Circle</div>
+          <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-faint);">Gym</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab-wrap">
+        <button class="tab active" data-tab="home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7"/><path d="M9 22V12h6v10"/></svg>
+          Home
+        </button>
+      </div>
+      <div class="tab-wrap">
+        <button class="tab" data-tab="routes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a4 4 0 0 0 4-4V9a4 4 0 0 0-4-4H8"/></svg>
+          Routes
+        </button>
+      </div>
+      <div class="tab-wrap">
+        <button class="tab" data-tab="alerts">
+          <span class="badge-count" id="alertBadge">3</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M3.3 16.9a1 1 0 0 0 .7 1.7h16a1 1 0 0 0 .7-1.7A11.4 11.4 0 0 1 18 8.5a6 6 0 0 0-12 0 11.4 11.4 0 0 1-2.7 8.4"/></svg>
+          Alerts
+        </button>
+      </div>
+      <div class="tab-wrap">
+        <button class="tab" data-tab="saved">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>
+          Saved
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ---------- tab switching ----------
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.panel');
+  tabs.forEach(tab=>{
+    tab.addEventListener('click', ()=>{
+      tabs.forEach(t=>t.classList.remove('active'));
+      panels.forEach(p=>p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ---------- live departure board ----------
+  const CROWD = {
+    low:    {label:'Seats free',  color:'var(--low)',  bars:1},
+    medium: {label:'Filling up',  color:'var(--med)',  bars:2},
+    high:   {label:'Standing only', color:'var(--high)', bars:3},
+  };
+
+  let buses = [
+    { route:'12A', dest:'Church Circle',       seconds: 4*60+12,  crowd:'medium', delay:0 },
+    { route:'7X',  dest:'Outer Ring Rd',       seconds: 9*60+45,  crowd:'low',    delay:8 },
+    { route:'45',  dest:'Gym Junction',        seconds: 14*60+30, crowd:'high',   delay:0 },
+  ];
+
+  function fmt(sec){
+    const m = Math.floor(sec/60);
+    const s = sec%60;
+    return { m, s: String(s).padStart(2,'0') };
+  }
+
+  function renderBoard(flipRoutes){
+    const board = document.getElementById('board');
+    board.innerHTML = buses.map(b=>{
+      const t = fmt(Math.max(b.seconds,0));
+      const c = CROWD[b.crowd];
+      const bars = [1,2,3].map(i=>{
+        const active = i<=c.bars;
+        return `<div class="crowd-bar" style="background:${active? c.color : 'var(--text-faint)'}; opacity:${active?1:0.35}"></div>`;
+      }).join('');
+      const tag = b.delay > 0
+        ? `<span class="tag delay">+${b.delay} MIN</span>`
+        : `<span class="tag ontime">ON TIME</span>`;
+      const flipClass = flipRoutes && flipRoutes.includes(b.route) ? 'flip' : '';
+      return `
+        <div class="board-row">
+          <div class="route-chip">${b.route}</div>
+          <div class="route-info">
+            <div class="route-dest">${b.dest}</div>
+            <div class="route-meta">
+              <div class="crowd-meter">${bars}</div>
+              <span class="crowd-label">${c.label}</span>
+              ${tag}
+            </div>
+          </div>
+          <div class="eta ${flipClass}">${t.m}<span class="unit">m</span> ${t.s}<span class="unit">s</span></div>
+        </div>`;
+    }).join('');
+  }
+
+  function tick(){
+    const changed = [];
+    buses.forEach(b=>{
+      if(b.seconds > 0){ b.seconds -= 1; changed.push(b.route); }
+      else { b.seconds = 6*60 + Math.floor(Math.random()*180); } // bus "departs", next one scheduled
+    });
+    renderBoard(changed);
+    const now = new Date();
+    document.getElementById('clockRef').textContent =
+      now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  }
+
+  // occasionally drift a crowd estimate, like a live sensor feed would
+  function driftCrowd(){
+    const levels = ['low','medium','high'];
+    const target = buses[Math.floor(Math.random()*buses.length)];
+    let idx = levels.indexOf(target.crowd);
+    idx = Math.max(0, Math.min(2, idx + (Math.random() > 0.5 ? 1 : -1)));
+    target.crowd = levels[idx];
+  }
+
+  renderBoard();
+  setInterval(tick, 1000);
+  setInterval(driftCrowd, 6000);
+
+  document.getElementById('refreshBtn').addEventListener('click', ()=>{
+    driftCrowd();
+    renderBoard(buses.map(b=>b.route));
+  });
+
+  document.getElementById('planBtn').addEventListener('click', ()=>{
+    // simple affordance: pulse the options list to acknowledge the search
+    const cards = document.querySelectorAll('#panel-routes .option');
+    cards.forEach((c,i)=>{
+      c.style.transition = 'opacity 0.3s, transform 0.3s';
+      c.style.opacity = 0;
+      c.style.transform = 'translateY(6px)';
+      setTimeout(()=>{ c.style.opacity = 1; c.style.transform='translateY(0)'; }, 120*(i+1));
+    });
+  });
+</script>
+
+</body>
+</html>

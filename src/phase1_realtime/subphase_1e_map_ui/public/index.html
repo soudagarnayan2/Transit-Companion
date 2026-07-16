@@ -1,0 +1,2969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="description" content="Trassit Companion — Real-time Maharashtra transit, multimodal journey planning, and smart crowd predictions.">
+<meta name="theme-color" content="#0F1119">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Trassit Companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* ────────────────────────────────────────────────────────────────
+   DESIGN TOKENS
+──────────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #0F1119;
+  --frame:     #15181F;
+  --surface:   #1B1F2B;
+  --surface-2: #232838;
+  --border:    #2C3244;
+  --text:      #EDEFF5;
+  --text-muted:#8B93A8;
+  --text-faint:#565E73;
+  --accent:    #FFB627;
+  --accent-dim:#4A3B18;
+  --info:      #4DA8FF;
+  --low:       #3ED692;
+  --low-dim:   #173328;
+  --med:       #FFC94D;
+  --med-dim:   #3A2E12;
+  --high:      #FF5C6C;
+  --high-dim:  #3A1A20;
+  --radius:    14px;
+  --sidebar-w: 260px;
+  --font-display:'Space Grotesk', sans-serif;
+  --font-body:  'Inter', sans-serif;
+  --font-mono:  'IBM Plex Mono', monospace;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   RESET & BASE
+──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { font-size: 16px; scroll-behavior: smooth; }
+
+/* ── USER-FRIENDLY improvements: bigger base sizes ── */
+.section-label-uf {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin: 18px 0 10px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+body {
+  margin: 0;
+  background: radial-gradient(circle at 15% 0%, #1A2035 0%, transparent 50%),
+              radial-gradient(circle at 85% 100%, #191B2A 0%, transparent 50%),
+              var(--bg);
+  font-family: var(--font-body);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+button { cursor: pointer; font-family: var(--font-body); }
+input, textarea { font-family: var(--font-body); }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+* { -ms-overflow-style: -ms-autohiding-scrollbar; }
+
+/* ────────────────────────────────────────────────────────────────
+   LAYOUT SHELL
+──────────────────────────────────────────────────────────────── */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   SIDEBAR NAV (Desktop / Tablet)
+──────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--frame);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.sidebar-logo .logo-mark {
+  width: 34px; height: 34px;
+  background: var(--accent);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  color: #1A1300;
+  flex-shrink: 0;
+}
+.sidebar-logo .logo-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+}
+.sidebar-logo .logo-sub {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  margin-top: 1px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+}
+.nav-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-btn:hover { background: var(--surface); color: var(--text); }
+.nav-btn.active { background: var(--accent-dim); color: var(--accent); }
+.nav-badge {
+  margin-left: auto;
+  background: var(--high);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.sidebar-section {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  padding: 8px 14px 4px;
+  margin-top: 8px;
+}
+
+.sidebar-status {
+  margin-top: auto;
+  padding: 12px 14px;
+  background: var(--surface);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--low);
+  box-shadow: 0 0 6px var(--low);
+  animation: pulse 2s infinite;
+  flex-shrink: 0;
+}
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+
+/* ────────────────────────────────────────────────────────────────
+   MAIN CONTENT AREA
+──────────────────────────────────────────────────────────────── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Top header bar (desktop) */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(15, 17, 25, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  flex-shrink: 0;
+}
+.topbar-left .eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+  text-transform: uppercase;
+}
+.topbar-left .page-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  margin: 2px 0 0;
+}
+.topbar-actions { display: flex; gap: 8px; }
+.icon-btn {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.icon-btn:hover { background: var(--surface-2); color: var(--text); }
+.icon-btn svg { width: 17px; height: 17px; }
+
+/* Panel container */
+.panels {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.panel {
+  display: none;
+  flex-direction: column;
+  padding: 20px 24px;
+  overflow-y: auto;
+  height: 100%;
+  gap: 0;
+}
+.panel.active { display: flex; }
+
+/* City filter bar */
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.filter-pill {
+  padding: 9px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.filter-pill:hover { border-color: var(--accent); color: var(--text); }
+.filter-pill.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+
+/* Section label */
+.section-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin: 18px 0 10px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.section-label:first-child { margin-top: 0; }
+
+/* Generic card */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   DEPARTURE BOARD
+──────────────────────────────────────────────────────────────── */
+.board {
+  background: linear-gradient(180deg, #171B27 0%, #12151F 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 12px;
+  max-height: 480px;
+  overflow-y: auto;
+}
+.board-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.board-row:last-child { border-bottom: none; }
+.board-row:hover { background: rgba(255,255,255,0.03); }
+.route-chip {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13px;
+  min-width: 52px;
+  height: 44px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  padding: 0 6px;
+  text-align: center;
+}
+.route-info { flex: 1; min-width: 0; }
+.route-dest {
+  font-size: 14.5px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.route-meta {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 5px; flex-wrap: wrap;
+}
+.route-city {
+  font-size: 12px;
+  color: var(--text-faint);
+  background: var(--surface-2);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.crowd-meter { display: flex; gap: 2px; align-items: flex-end; }
+.crowd-bar { width: 5px; border-radius: 1px; }
+.crowd-bar:nth-child(1){ height: 6px; }
+.crowd-bar:nth-child(2){ height: 10px; }
+.crowd-bar:nth-child(3){ height: 14px; }
+.crowd-label { font-size: 13px; color: var(--text-muted); font-weight: 500; }
+.tag {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+.tag.delay  { background: var(--high-dim); color: var(--high); }
+.tag.ontime { background: var(--low-dim);  color: var(--low); }
+.tag.type-metro { background: rgba(77,168,255,0.12); color: var(--info); }
+.tag.type-train { background: rgba(62,214,146,0.10); color: var(--low); }
+.eta {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 22px;
+  text-align: right;
+  min-width: 80px;
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+.eta .unit { font-size: 13px; color: var(--text-muted); font-weight: 500; margin-left: 2px; }
+
+/* ────────────────────────────────────────────────────────────────
+   ROUTES GRID (Desktop two-column)
+──────────────────────────────────────────────────────────────── */
+.routes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.route-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  border-left: 4px solid var(--accent);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.route-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+.route-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.route-card-name { font-family: var(--font-display); font-weight: 700; font-size: 15px; }
+.route-card-sub  { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+.route-card-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+
+/* ────────────────────────────────────────────────────────────────
+   JOURNEY PLANNER
+──────────────────────────────────────────────────────────────── */
+.planner-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.field-group {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 4px;
+  margin-bottom: 10px;
+}
+.field {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.field:last-child { border-bottom: none; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot.from { background: var(--info); }
+.dot.to   { background: var(--accent); }
+.field input {
+  background: none; border: none; outline: none;
+  color: var(--text); font-size: 14px; width: 100%;
+}
+.field input::placeholder { color: var(--text-faint); }
+.go-btn {
+  width: 100%; padding: 13px;
+  border-radius: 10px; border: none;
+  background: var(--accent); color: #1A1300;
+  font-family: var(--font-display); font-weight: 700;
+  font-size: 14px; letter-spacing: 0.01em;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.go-btn:hover  { opacity: 0.9; }
+.go-btn:active { transform: scale(0.99); }
+
+.option-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.option-head {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 10px;
+}
+.option-time { font-family: var(--font-display); font-weight: 700; font-size: 20px; }
+.option-sub  { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-muted); }
+.legs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.leg {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-muted);
+  background: var(--surface-2); border: 1px solid var(--border);
+  padding: 5px 10px; border-radius: 8px;
+}
+.leg b { color: var(--text); font-weight: 600; }
+.arrow { color: var(--text-faint); font-size: 12px; }
+.offline-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--low); background: var(--low-dim);
+  padding: 3px 8px; border-radius: 6px;
+  margin-top: 10px; width: fit-content;
+}
+.offline-pill::before { content: "●"; font-size: 7px; }
+
+/* ────────────────────────────────────────────────────────────────
+   ALERTS PANEL
+──────────────────────────────────────────────────────────────── */
+.alert {
+  display: flex; gap: 14px; padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.alert:last-child { border-bottom: none; }
+.alert-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 16px;
+}
+.alert-icon.high { background: var(--high-dim); }
+.alert-icon.med  { background: var(--med-dim); }
+.alert-icon.info { background: rgba(77,168,255,0.12); }
+.alert-body { flex: 1; }
+.alert-title { font-size: 13.5px; font-weight: 600; }
+.alert-desc  { font-size: 12.5px; color: var(--text-muted); margin-top: 3px; line-height: 1.55; }
+.alert-time  { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); margin-top: 6px; }
+
+.text-input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: var(--text);
+  width: 100%;
+  margin-bottom: 10px;
+  font-size: 13.5px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.text-input:focus { border-color: var(--accent); }
+.text-input::placeholder { color: var(--text-faint); }
+
+/* ────────────────────────────────────────────────────────────────
+   WALLET PANEL
+──────────────────────────────────────────────────────────────── */
+.wallet-balance-card {
+  text-align: center;
+  padding: 24px 16px;
+}
+.wallet-val {
+  font-family: var(--font-display);
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+.wallet-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+}
+.two-col { display: flex; gap: 10px; }
+.two-col .text-input { margin-bottom: 0; }
+
+.ticket-card {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--surface-2) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  border-left: 4px solid var(--low);
+}
+.ticket-head { display: flex; justify-content: space-between; font-weight: 600; font-size: 14px; margin-bottom: 8px; }
+.ticket-token {
+  font-family: var(--font-mono);
+  font-size: 9.5px;
+  color: var(--text-faint);
+  word-break: break-all;
+  background: var(--bg);
+  padding: 8px 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+.ticket-foot { display: flex; justify-content: space-between; align-items: center; }
+.small-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.small-btn:hover { opacity: 0.85; }
+
+/* ────────────────────────────────────────────────────────────────
+   TOGGLE ROW
+──────────────────────────────────────────────────────────────── */
+.toggle-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+.toggle-row:last-child { border-bottom: none; }
+.toggle-title { font-size: 13.5px; font-weight: 500; }
+.toggle-sub   { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+.switch {
+  width: 42px; height: 24px; border-radius: 12px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.2s;
+}
+.switch.on { background: var(--accent-dim); border-color: var(--accent); }
+.switch::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--text-faint); transition: all 0.2s;
+}
+.switch.on::after { left: 20px; background: var(--accent); }
+
+/* ────────────────────────────────────────────────────────────────
+   BOTTOM MOBILE NAV (Mobile only)
+──────────────────────────────────────────────────────────────── */
+.bottomnav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(21, 24, 33, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  padding: 8px 8px max(16px, env(safe-area-inset-bottom));
+  z-index: 100;
+}
+.bottomnav-inner { display: flex; }
+.tab {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: none; border: none;
+  color: var(--text-faint);
+  font-size: 12px; font-weight: 600;
+  padding: 6px 0;
+  min-height: 52px;
+  position: relative;
+}
+.tab.active { color: var(--accent); }
+.tab svg { width: 22px; height: 22px; }
+.tab-badge {
+  position: absolute; top: 2px; right: calc(50% - 20px);
+  background: var(--high); color: #fff;
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  min-width: 15px; height: 15px; padding: 0 3px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* Mobile top header */
+.mobile-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  padding-top: max(12px, env(safe-area-inset-top));
+  border-bottom: 1px solid var(--border);
+  background: rgba(15,17,25,0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.mobile-header .mobile-logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+}
+.mobile-header .mobile-logo span { color: var(--accent); }
+
+/* Report status messaging */
+.report-status-msg {
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 6px;
+  display: none;
+}
+.report-status-msg.ok  { background: var(--low-dim);  color: var(--low);  display: block; }
+.report-status-msg.err { background: var(--high-dim); color: var(--high); display: block; }
+
+/* Empty note */
+.empty-note {
+  font-family: var(--font-mono);
+  font-size: 12px; color: var(--text-faint);
+  text-align: center;
+  padding: 20px 10px;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   RESPONSIVE BREAKPOINTS
+──────────────────────────────────────────────────────────────── */
+
+/* ── Tablet (768px to 1023px) ── */
+@media (max-width: 1023px) {
+  :root { --sidebar-w: 220px; }
+  .panel { padding: 16px 18px; }
+}
+
+/* ── Mobile (≤ 767px) ── */
+@media (max-width: 767px) {
+  .app-shell { flex-direction: column; height: auto; min-height: 100vh; overflow: auto; }
+  .sidebar   { display: none !important; }
+  .main      { flex: 1; overflow: auto; }
+  .topbar    { display: none; }
+  .mobile-header { display: flex; }
+  .bottomnav { display: block; }
+  .panels    { height: auto; overflow: visible; }
+  .panel     { height: auto; padding: 14px 14px 90px; }
+  .routes-grid { grid-template-columns: 1fr; }
+  .planner-layout { grid-template-columns: 1fr; }
+  .two-col   { flex-direction: column; }
+}
+
+/* ── Large desktop (≥ 1280px) ── */
+@media (min-width: 1280px) {
+  .planner-layout { grid-template-columns: 380px 1fr; }
+}
+
+/* ────────────────────────────────────────────────────────────────
+   LANGUAGE SWITCHER
+──────────────────────────────────────────────────────────────── */
+.lang-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.lang-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--accent); }
+.lang-btn .globe { font-size: 16px; }
+
+.lang-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10, 12, 22, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 9998;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.lang-overlay.open { display: flex; }
+
+.lang-dropdown {
+  background: var(--frame);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 80vh;
+  display: none;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+  animation: modalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 9999;
+}
+.lang-dropdown.open { display: flex; }
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.lang-dropdown-header {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  padding: 0 0 14px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.lang-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s;
+}
+.lang-close-btn:hover {
+  color: var(--text);
+}
+
+.lang-options-list {
+  overflow-y: auto;
+  max-height: 50vh;
+  padding-right: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lang-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.lang-option:hover {
+  background: var(--surface-2);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.lang-option.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+.lang-option .lang-flag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 26px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.lang-option.active .lang-flag {
+  background: var(--accent);
+  color: var(--bg);
+  border-color: var(--accent);
+}
+.lang-option .lang-names {
+  flex: 1;
+  text-align: left;
+}
+.lang-option .lang-native {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  display: block;
+}
+.lang-option .lang-eng {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+/* Mobile lang button in header */
+.mobile-lang-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 12px;
+  border-radius: 9px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+}
+
+/* Welcome guide strip */
+.welcome-guide {
+  background: linear-gradient(135deg, rgba(255,182,39,0.08), rgba(77,168,255,0.08));
+  border: 1px solid rgba(255,182,39,0.2);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.welcome-guide .wg-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+.welcome-guide .wg-title { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.welcome-guide .wg-steps { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
+.welcome-guide .wg-close {
+  margin-left: auto; background: none; border: none;
+  color: var(--text-faint); font-size: 18px; cursor: pointer; flex-shrink: 0; align-self: flex-start;
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ══════════════════════════════════════════════════════
+       SIDEBAR (Desktop / Tablet)
+  ══════════════════════════════════════════════════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark">T</div>
+      <div>
+        <div class="logo-text">Trassit</div>
+        <div class="logo-sub">India Transit Guide</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section" data-i18n="nav_menu">Menu</div>
+
+    <button class="nav-btn active" data-tab="home" id="nav-home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7"/><path d="M9 22V12h6v10"/></svg>
+      <span data-i18n="nav_home">🚌 Bus &amp; Train Times</span>
+    </button>
+    <button class="nav-btn" data-tab="routes" id="nav-routes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a4 4 0 0 0 4-4V9a4 4 0 0 0-4-4H8"/></svg>
+      <span data-i18n="nav_routes">🗺️ Find Routes</span>
+    </button>
+    <button class="nav-btn" data-tab="planner" id="nav-planner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      <span data-i18n="nav_planner">🧭 Plan My Trip</span>
+    </button>
+    <button class="nav-btn" data-tab="alerts" id="nav-alerts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M3.3 16.9a1 1 0 0 0 .7 1.7h16a1 1 0 0 0 .7-1.7A11.4 11.4 0 0 1 18 8.5a6 6 0 0 0-12 0 11.4 11.4 0 0 1-2.7 8.4"/></svg>
+      <span data-i18n="nav_alerts">⚠️ Problems &amp; Help</span>
+      <span class="nav-badge" id="alertNavBadge">0</span>
+    </button>
+    <div class="sidebar-status">
+      <div class="status-dot"></div>
+      <span id="sidebarStatusText" data-i18n="status_live">✅ System is Live</span>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════════════════════════════
+       MAIN CONTENT
+  ══════════════════════════════════════════════════════ -->
+  <main class="main">
+
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+      <div class="mobile-logo">Trassit <span>Companion</span></div>
+      <div style="display:flex; gap:8px;">
+        <button class="mobile-lang-btn" id="mobileLangBtn" onclick="toggleLangDropdown(event)">
+          <span id="mobileLangFlag">🇮🇳</span>
+          <span id="mobileLangLabel">EN</span>
+        </button>
+        <button class="icon-btn" id="refreshBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Desktop Topbar -->
+    <div class="topbar" style="position:relative;">
+      <div class="topbar-left">
+        <div class="eyebrow" data-i18n="eyebrow">India's Transport Guide</div>
+        <div class="page-title" id="topbarTitle" data-i18n="nav_home">🚌 Bus &amp; Train Times</div>
+      </div>
+      <div class="topbar-actions">
+        <!-- Language Switcher -->
+        <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown(event)" title="Change Language">
+          <span class="globe" id="langBtnFlag">🇮🇳</span>
+          <span id="langBtnLabel">English</span>
+        </button>
+        <button class="icon-btn" id="refreshBtnDesktop" title="Refresh live data">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+        </button>
+      </div>
+
+    </div>
+
+    <div class="panels">
+
+      <!-- ════ HOME — Live Departures ════ -->
+      <div class="panel active" id="panel-home">
+        <!-- Welcome Guide Strip -->
+        <div class="welcome-guide" id="welcomeGuide">
+          <span class="wg-icon">🚌</span>
+          <div>
+            <div class="wg-title" data-i18n="welcome_title">How to use this app</div>
+            <div class="wg-steps" data-i18n="welcome_steps">1️⃣ Choose your city below &nbsp;→&nbsp; 2️⃣ See the next buses &amp; trains &nbsp;→&nbsp; 3️⃣ Tap "Plan My Trip" to find the best route</div>
+          </div>
+          <button class="wg-close" onclick="document.getElementById('welcomeGuide').style.display='none'">✕</button>
+        </div>
+
+        <div class="section-label" data-i18n="filter_city">🏙️ Choose your city</div>
+        <div class="filter-bar" id="cityFilterBar" style="flex-wrap: wrap; gap: 6px; display: flex;">
+          <button class="filter-pill active" data-city="all" data-i18n="city_all">All India</button>
+          <button class="filter-pill" data-city="Mumbai">Mumbai</button>
+          <button class="filter-pill" data-city="Pune">Pune</button>
+          <button class="filter-pill" data-city="Pimpri Chinchwad">Pimpri Chinchwad</button>
+          <button class="filter-pill" data-city="Delhi">Delhi</button>
+          <button class="filter-pill" data-city="Bengaluru">Bengaluru</button>
+          <button class="filter-pill" data-city="Kolkata">Kolkata</button>
+          <button class="filter-pill" data-city="Chennai">Chennai</button>
+          <button class="filter-pill" data-city="Hyderabad">Hyderabad</button>
+          <button class="filter-pill" data-city="Ahmedabad">Ahmedabad</button>
+          <button class="filter-pill" data-city="Nagpur">Nagpur</button>
+          <button class="filter-pill" data-city="Nashik">Nashik</button>
+          <button class="filter-pill" data-city="Inter-city" data-i18n="city_intercity">Inter-city</button>
+        </div>
+
+        <div class="section-label" data-i18n="section_leaving">🟢 Buses &amp; Trains Leaving Soon</div>
+        <div class="board" id="board">
+          <div style="padding:24px; text-align:center; color:var(--text-muted);" data-i18n="loading_board">Loading...</div>
+        </div>
+
+        <div class="section-label" data-i18n="crowd_why">💡 How do we know how crowded it is?</div>
+        <div class="card" style="font-size:13.5px; color:var(--text-muted); line-height:1.8;" data-i18n="crowd_explain">
+          We combine reports from other passengers like you with historical patterns for each route. This updates every 30 seconds.
+        </div>
+      </div>
+
+      <!-- ════ ROUTES — All-India Transport Browser ════ -->
+      <div class="panel" id="panel-routes">
+
+        <!-- Mode tabs -->
+        <div class="filter-bar" id="modeTabBar" style="margin-bottom:14px;">
+          <button class="filter-pill active" data-mode="metro">🚇 Metro</button>
+          <button class="filter-pill" data-mode="bus">🚌 Bus</button>
+          <button class="filter-pill" data-mode="train">🚆 Train</button>
+        </div>
+
+        <!-- Search + secondary filter row -->
+        <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+          <input id="routeSearch" class="text-input" style="flex:1; min-width:160px; margin-bottom:0;" data-i18n-placeholder="search_placeholder" placeholder="🔍 Search city, bus, or train...">
+          <select id="stateFilter" class="text-input" style="width:auto; min-width:150px; margin-bottom:0;">
+            <option value="all" data-i18n="filter_all_states">All States / Networks</option>
+          </select>
+        </div>
+
+        <div class="section-label" id="routesSectionLabel" data-i18n="metro_label">Metro lines across India</div>
+        <div class="routes-grid" id="routesGrid">
+          <div class="card" style="text-align:center; color:var(--text-muted);" data-i18n="loading_routes">Loading routes...</div>
+        </div>
+      </div>
+
+      <!-- ════ PLANNER — Journey Planner ════ -->
+      <div class="panel" id="panel-planner">
+        <div class="planner-layout">
+          <div>
+            <div class="section-label" data-i18n="planner_title">🧭 Where do you want to go?</div>
+            <div class="field-group">
+              <div class="field">
+                <span style="font-size:20px;">📍</span>
+                <input type="text" id="originInput" value="Mumbai" data-latlng="19.1136, 72.8696" data-i18n-placeholder="planner_from" placeholder="Starting point (e.g. Andheri Station)" style="width: 100%; background: transparent; color: var(--text); border: none; font-size: 14px; outline: none; font-family: inherit;">
+              </div>
+              <div class="field">
+                <span style="font-size:20px;">🏁</span>
+                <input type="text" id="destInput" value="Pune" data-latlng="18.5018, 73.8629" data-i18n-placeholder="planner_to" placeholder="Destination (e.g. Dadar Station)" style="width: 100%; background: transparent; color: var(--text); border: none; font-size: 14px; outline: none; font-family: inherit;">
+              </div>
+            </div>
+            <button class="go-btn" id="planBtn" data-i18n="planner_btn">🔍 Show Me Routes</button>
+
+            <div class="section-label" style="margin-top:20px;" data-i18n="planner_options">🚌 Your Route Options</div>
+            <div id="multimodalOptionsList">
+              <div class="card" style="text-align:center; color:var(--text-muted); font-size:13.5px;" data-i18n="planner_hint">Enter your start and destination above, then tap Show Me Routes.</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="section-label">🗺️ Route Map</div>
+            <div id="planner-map" style="width: 100%; height: 350px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--surface); margin-bottom: 20px; overflow: hidden; position: relative; z-index: 1;">
+              <div style="padding: 24px; text-align: center; color: var(--text-muted); line-height: 300px;">Map Loading...</div>
+            </div>
+
+            <div class="section-label" data-i18n="offline_title">📵 Works Without Internet Too</div>
+            <div class="card" style="font-size:13.5px; color:var(--text-muted); line-height:1.75;" data-i18n="offline_desc">
+              Bus &amp; train timetables are saved on your phone. If you lose network, you can still see schedules.
+            </div>
+            <span class="offline-pill" data-i18n="offline_pill">Offline-ready</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ ALERTS ════ -->
+      <div class="panel" id="panel-alerts">
+        <div class="section-label" id="alertsCountLabel" data-i18n="alerts_current">⚠️ Current Problems</div>
+        <div class="card" style="padding: 4px 16px;" id="alertsList">
+          <div class="empty-note" data-i18n="alerts_checking">Checking for problems...</div>
+        </div>
+
+        <div class="section-label" data-i18n="report_title">📢 Something Wrong? Tell Us!</div>
+        <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+          <textarea id="reportInput" class="text-input" style="height:80px; resize:none; font-size:14px;" data-i18n-placeholder="report_placeholder" placeholder="e.g. Bus 335A is very late near Andheri Station..."></textarea>
+          <button class="go-btn" style="margin-top:0;" id="submitReportBtn" data-i18n="report_btn">📢 Send My Report</button>
+          <div id="reportStatus" class="report-status-msg"></div>
+        </div>
+
+        <div class="section-label" data-i18n="alert_prefs">🔔 Get Notified When...</div>
+        <div class="card">
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-title" data-i18n="pref1_title">Bus/Train is very late (5+ min)</div>
+              <div class="toggle-sub" data-i18n="pref1_sub">On routes you have saved</div>
+            </div>
+            <div class="switch on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-title" data-i18n="pref2_title">Bus is very crowded</div>
+              <div class="toggle-sub" data-i18n="pref2_sub">15 min before your usual departure</div>
+            </div>
+            <div class="switch on" onclick="this.classList.toggle('on')"></div>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-title" data-i18n="pref3_title">Route is changed or diverted</div>
+              <div class="toggle-sub" data-i18n="pref3_sub">All routes near your saved stops</div>
+            </div>
+            <div class="switch" onclick="this.classList.toggle('on')"></div>
+          </div>
+        </div>
+      </div>
+
+
+
+    </div><!-- /panels -->
+
+    <!-- ── Bottom nav (mobile only) ── -->
+    <nav class="bottomnav">
+      <div class="bottomnav-inner">
+        <button class="tab active" data-tab="home">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7"/><path d="M9 22V12h6v10"/></svg>
+          <span data-i18n="nav_home_short">🏠 Home</span>
+        </button>
+        <button class="tab" data-tab="routes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h8a4 4 0 0 0 4-4V9a4 4 0 0 0-4-4H8"/></svg>
+          <span data-i18n="nav_routes_short">🗺️ Routes</span>
+        </button>
+        <button class="tab" data-tab="planner">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          <span data-i18n="nav_planner_short">🧭 Plan</span>
+        </button>
+        <button class="tab" data-tab="alerts">
+          <span class="tab-badge" id="alertTabBadge">0</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path d="M3.3 16.9a1 1 0 0 0 .7 1.7h16a1 1 0 0 0 .7-1.7A11.4 11.4 0 0 1 18 8.5a6 6 0 0 0-12 0 11.4 11.4 0 0 1-2.7 8.4"/></svg>
+          <span data-i18n="nav_alerts_short">⚠️ Alerts</span>
+        </button>
+      </div>
+    </nav>
+
+  </main>
+</div>
+
+  <!-- Language Overlay (centered modal container) -->
+  <div class="lang-overlay" id="langOverlay" onclick="closeLangDropdown()">
+    <!-- Language Dropdown Modal -->
+    <div class="lang-dropdown" id="langDropdown" onclick="event.stopPropagation()">
+      <div class="lang-dropdown-header">
+        <span data-i18n="lang_choose">Choose Language</span>
+        <button class="lang-close-btn" onclick="closeLangDropdown()">✕</button>
+      </div>
+      <div class="lang-options-list">
+        <div class="lang-option active" data-lang="en" onclick="setLanguage('en')">
+          <span class="lang-flag">EN</span>
+          <div class="lang-names"><span class="lang-native">English</span><span class="lang-eng">English</span></div>
+        </div>
+        <div class="lang-option" data-lang="hi" onclick="setLanguage('hi')">
+          <span class="lang-flag">HI</span>
+          <div class="lang-names"><span class="lang-native">हिन्दी</span><span class="lang-eng">Hindi</span></div>
+        </div>
+        <div class="lang-option" data-lang="mr" onclick="setLanguage('mr')">
+          <span class="lang-flag">MR</span>
+          <div class="lang-names"><span class="lang-native">मराठी</span><span class="lang-eng">Marathi</span></div>
+        </div>
+        <div class="lang-option" data-lang="ta" onclick="setLanguage('ta')">
+          <span class="lang-flag">TA</span>
+          <div class="lang-names"><span class="lang-native">தமிழ்</span><span class="lang-eng">Tamil</span></div>
+        </div>
+        <div class="lang-option" data-lang="te" onclick="setLanguage('te')">
+          <span class="lang-flag">TE</span>
+          <div class="lang-names"><span class="lang-native">తెలుగు</span><span class="lang-eng">Telugu</span></div>
+        </div>
+        <div class="lang-option" data-lang="bn" onclick="setLanguage('bn')">
+          <span class="lang-flag">BN</span>
+          <div class="lang-names"><span class="lang-native">বাংলা</span><span class="lang-eng">Bengali</span></div>
+        </div>
+        <div class="lang-option" data-lang="kn" onclick="setLanguage('kn')">
+          <span class="lang-flag">KN</span>
+          <div class="lang-names"><span class="lang-native">ಕನ್ನಡ</span><span class="lang-eng">Kannada</span></div>
+        </div>
+        <div class="lang-option" data-lang="gu" onclick="setLanguage('gu')">
+          <span class="lang-flag">GU</span>
+          <div class="lang-names"><span class="lang-native">ગુજરાતી</span><span class="lang-eng">Gujarati</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// NAVIGATION — works for both sidebar nav & bottom tabs
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const pageLabels = {
+  home: 'Live Departures', routes: 'All Maharashtra Routes',
+  planner: 'Journey Planner', alerts: 'Alerts & Reports', wallet: 'Wallet & Tickets'
+};
+
+// Rename to avoid conflict with the language-aware wrapper defined later
+function _switchTabCore(tab) {
+  // Panels
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById('panel-' + tab);
+  if (target) target.classList.add('active');
+
+  // Sidebar nav
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+
+  // Bottom tabs
+  document.querySelectorAll('.tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+
+  // Topbar title is handled by language-aware switchTab wrapper
+}
+
+function switchTab(tab) {
+  _switchTabCore(tab);
+  // Update topbar title in current language (currentLang defined after LANGS object)
+  if (typeof LANGS !== 'undefined' && typeof currentLang !== 'undefined') {
+    const T = LANGS[currentLang] || LANGS.en;
+    const titleMap = { home:'nav_home', routes:'nav_routes', planner:'nav_planner', alerts:'nav_alerts' };
+    const key = titleMap[tab];
+    const titleEl = document.getElementById('topbarTitle');
+    if (key && T[key] && titleEl) titleEl.innerHTML = T[key];
+  }
+}
+
+document.querySelectorAll('[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// MAHARASHTRA ROUTES (embedded static data + API)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const MAHARASHTRA_ROUTES_STATIC = [
+  // Mumbai BEST Buses
+  { routeId:'BEST-335A', operator:'BEST', city:'Mumbai', type:'BUS', shortName:'335A', longName:'Andheri (E) → Powai Hiranandani', frequencyMinutes:8,  fareINR:17,  crowdLevel:'HIGH',   color:'#E3000B' },
+  { routeId:'BEST-101',  operator:'BEST', city:'Mumbai', type:'BUS', shortName:'101',  longName:'CST → Bandra Terminus',           frequencyMinutes:10, fareINR:22,  crowdLevel:'HIGH',   color:'#E3000B' },
+  { routeId:'BEST-123',  operator:'BEST', city:'Mumbai', type:'BUS', shortName:'123',  longName:'Kurla → Dharavi → Sion',          frequencyMinutes:12, fareINR:14,  crowdLevel:'MEDIUM', color:'#E3000B' },
+  { routeId:'BEST-231',  operator:'BEST', city:'Mumbai', type:'BUS', shortName:'231',  longName:'Borivali → Malad → Goregaon',     frequencyMinutes:6,  fareINR:12,  crowdLevel:'HIGH',   color:'#E3000B' },
+  { routeId:'BEST-56',   operator:'BEST', city:'Mumbai', type:'BUS', shortName:'56',   longName:'Colaba → Marine Lines → Churchgate',frequencyMinutes:5,  fareINR:10,  crowdLevel:'MEDIUM', color:'#E3000B' },
+  { routeId:'BEST-AS703',operator:'BEST', city:'Mumbai', type:'BUS', shortName:'AS-703',longName:'AC: Ghatkopar → Nariman Point',  frequencyMinutes:15, fareINR:45,  crowdLevel:'LOW',    color:'#0057A8' },
+  // Mumbai Metro, Monorail & Navi Mumbai Metro
+  { routeId:'MUM-METRO-1',  operator:'Mumbai Metro One',  city:'Mumbai', type:'METRO', shortName:'M1',  longName:'Metro L1: Versova → Andheri → Ghatkopar',  frequencyMinutes:4, fareINR:40, crowdLevel:'HIGH',   color:'#E30613' },
+  { routeId:'MUM-METRO-2A', operator:'MahaMetro Mumbai',  city:'Mumbai', type:'METRO', shortName:'M2A', longName:'Metro L2A: Dahisar (E) → Andheri (W)',      frequencyMinutes:5, fareINR:35, crowdLevel:'MEDIUM', color:'#F7941D' },
+  { routeId:'MUM-METRO-7',  operator:'MahaMetro Mumbai',  city:'Mumbai', type:'METRO', shortName:'M7',  longName:'Metro L7: Andheri (E) → Dahisar (E)',       frequencyMinutes:5, fareINR:35, crowdLevel:'MEDIUM', color:'#ED1C24' },
+  { routeId:'NMM-METRO-L1', operator:'CIDCO Metro',       city:'Navi Mumbai', type:'METRO', shortName:'NMM-1', longName:'Navi Mumbai Metro: Belapur → Pendhar', frequencyMinutes:10, fareINR:30, crowdLevel:'LOW', color:'#008080' },
+  { routeId:'MUM-MONORAIL', operator:'MMRDA Monorail',    city:'Mumbai', type:'METRO', shortName:'Monorail', longName:'Monorail: Jacob Circle → Wadala → Chembur', frequencyMinutes:15, fareINR:30, crowdLevel:'MEDIUM', color:'#FF8C00' },
+  // Mumbai Local Suburban Trains
+  { routeId:'MUM-WR-VIRAR', operator:'Western Railway',   city:'Mumbai', type:'TRAIN', shortName:'WR Fast',   longName:'Western Line Fast: Churchgate → Virar',  frequencyMinutes:3,  fareINR:55, crowdLevel:'HIGH', color:'#0070C0' },
+  { routeId:'MUM-WR-DANO',  operator:'Western Railway',   city:'Mumbai', type:'TRAIN', shortName:'WR Dahanu', longName:'Suburban Local: Churchgate → Dahanu Road', frequencyMinutes:20, fareINR:80, crowdLevel:'HIGH', color:'#0070C0' },
+  { routeId:'MUM-CR-KASARA',operator:'Central Railway',   city:'Mumbai', type:'TRAIN', shortName:'CR Kasara',  longName:'Central Line: CSMT → Kasara',            frequencyMinutes:5,  fareINR:75, crowdLevel:'HIGH', color:'#C00000' },
+  { routeId:'MUM-CR-KARJAT',operator:'Central Railway',   city:'Mumbai', type:'TRAIN', shortName:'CR Karjat',  longName:'Central Line: CSMT → Kalyan → Karjat',   frequencyMinutes:6,  fareINR:75, crowdLevel:'HIGH', color:'#C00000' },
+  { routeId:'MUM-HARBOUR',  operator:'Central Railway',   city:'Mumbai', type:'TRAIN', shortName:'Harbour',   longName:'Harbour Line: CSMT → Panvel',            frequencyMinutes:6,  fareINR:50, crowdLevel:'HIGH', color:'#7030A0' },
+  { routeId:'MUM-TRANS-HARBOUR', operator:'Central Railway', city:'Mumbai', type:'TRAIN', shortName:'Trans-H',  longName:'Trans-Harbour Line: Thane → Vashi → Panvel', frequencyMinutes:8, fareINR:35, crowdLevel:'HIGH', color:'#7030A0' },
+  // Thane / Navi Mumbai / MMR Municipal Buses
+  { routeId:'TMT-1',   operator:'TMT',  city:'Thane',      type:'BUS', shortName:'TMT-1',    longName:'Thane Station → Wagle Estate',     frequencyMinutes:10, fareINR:12, crowdLevel:'HIGH',   color:'#0066CC' },
+  { routeId:'NMMT-10', operator:'NMMT', city:'Navi Mumbai', type:'BUS', shortName:'NMMT-10',  longName:'Vashi → Belapur → Kharghar',       frequencyMinutes:12, fareINR:14, crowdLevel:'MEDIUM', color:'#006600' },
+  { routeId:'MBMT-10', operator:'MBMT', city:'Mumbai',      type:'BUS', shortName:'MBMT-10',  longName:'MBMT: Mira Road Station → Bhayandar Station', frequencyMinutes:12, fareINR:12, crowdLevel:'MEDIUM', color:'#00A859' },
+  { routeId:'KDMT-11', operator:'KDMT', city:'Mumbai',      type:'BUS', shortName:'KDMT-11',  longName:'KDMT: Kalyan Station → Dombivli Station', frequencyMinutes:15, fareINR:15, crowdLevel:'MEDIUM', color:'#FF8C00' },
+  { routeId:'VVMT-302',operator:'VVMT', city:'Mumbai',      type:'BUS', shortName:'VVMT-302', longName:'VVMT: Virar Station → Vasai Road Station', frequencyMinutes:15, fareINR:18, crowdLevel:'MEDIUM', color:'#CC0000' },
+  // Pune PMPML Buses
+  { routeId:'PMPML-1',     operator:'PMPML', city:'Pune', type:'BUS', shortName:'PMPML-1',  longName:'Pune Stn → Swargate → Katraj',          frequencyMinutes:8,  fareINR:13, crowdLevel:'HIGH',   color:'#0056A7' },
+  { routeId:'PMPML-155',   operator:'PMPML', city:'Pune', type:'BUS', shortName:'155',       longName:'Shivajinagar → Kothrud → Chandani',     frequencyMinutes:10, fareINR:14, crowdLevel:'MEDIUM', color:'#0056A7' },
+  { routeId:'PMPML-AC-41', operator:'PMPML', city:'Pune', type:'BUS', shortName:'AC-41',     longName:'AC: Hinjewadi IT Park → Pune Station',  frequencyMinutes:15, fareINR:50, crowdLevel:'HIGH',   color:'#006633' },
+  { routeId:'PMPML-11',    operator:'PMPML', city:'Pune', type:'BUS', shortName:'11',         longName:'Hadapsar → MG Road → Shivajinagar',    frequencyMinutes:7,  fareINR:11, crowdLevel:'HIGH',   color:'#0056A7' },
+  { routeId:'PMPML-42',    operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'42', longName:'PCMC Bhawan → Swargate',          frequencyMinutes:10, fareINR:20, crowdLevel:'HIGH',   color:'#0056A7' },
+  { routeId:'PMPML-20',    operator:'PMPML', city:'Pune', type:'BUS', shortName:'20',         longName:'Pune Station → Alandi Devachi',        frequencyMinutes:12, fareINR:18, crowdLevel:'MEDIUM', color:'#0056A7' },
+  { routeId:'PMPML-357',   operator:'PMPML', city:'Chakan', type:'BUS', shortName:'357',      longName:'Swargate → Bhosari → Chakan Phata',     frequencyMinutes:15, fareINR:25, crowdLevel:'HIGH',   color:'#0056A7' },
+  { routeId:'PMPML-358',   operator:'PMPML', city:'Khed', type:'BUS', shortName:'358',        longName:'Swargate → Chakan → Rajgurunagar (Khed)', frequencyMinutes:20, fareINR:35, crowdLevel:'HIGH',   color:'#0056A7' },
+  { routeId:'PMPML-120',   operator:'PMPML', city:'Khed', type:'BUS', shortName:'120',       longName:'Alandi → Chakan Chowk',                frequencyMinutes:25, fareINR:15, crowdLevel:'MEDIUM', color:'#0056A7' },
+  { routeId:'PMPML-315',   operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'315', longName:'Chinchwad Station → Alandi',     frequencyMinutes:20, fareINR:18, crowdLevel:'MEDIUM', color:'#0056A7' },
+  { routeId:'PMPML-343',   operator:'PMPML', city:'Khed', type:'BUS', shortName:'343',        longName:'Bhosari → Chakan → Rajgurunagar',      frequencyMinutes:15, fareINR:25, crowdLevel:'HIGH',   color:'#0056A7' },
+  { routeId:'PMPML-347',   operator:'PMPML', city:'Pune', type:'BUS', shortName:'347',        longName:'Wagholi → Hinjewadi Phase 3',          frequencyMinutes:12, fareINR:30, crowdLevel:'HIGH',   color:'#0056A7' },
+  // Pimpri Chinchwad local buses
+  { routeId:'PMPML-PCMC-311', operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'311', longName:'Bhosari → Chinchwad Station', frequencyMinutes:15, fareINR:15, crowdLevel:'MEDIUM', color:'#0056A7' },
+  { routeId:'PMPML-PCMC-312', operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'312', longName:'Chinchwad Station → Nigdi Depot', frequencyMinutes:12, fareINR:12, crowdLevel:'MEDIUM', color:'#0056A7' },
+  { routeId:'PMPML-PCMC-305', operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'305', longName:'Nigdi Depot → Pune Railway Station', frequencyMinutes:8, fareINR:22, crowdLevel:'HIGH', color:'#0056A7' },
+  { routeId:'PMPML-PCMC-372', operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'372', longName:'Nigdi Depot → Hinjewadi Phase 3', frequencyMinutes:15, fareINR:25, crowdLevel:'HIGH', color:'#0056A7' },
+  // Pune Metro, BRTS & Local Trains
+  { routeId:'PUNE-METRO-1', operator:'MahaMetro Pune', city:'Pune', type:'METRO', shortName:'PM1', longName:'Pune Metro L1: PCMC → Swargate',    frequencyMinutes:6, fareINR:30, crowdLevel:'MEDIUM', color:'#00A651' },
+  { routeId:'PUNE-METRO-2', operator:'MahaMetro Pune', city:'Pune', type:'METRO', shortName:'PM2', longName:'Pune Metro L2: Vanaz → Ramwadi',    frequencyMinutes:7, fareINR:30, crowdLevel:'MEDIUM', color:'#BE1E2D' },
+  { routeId:'PUNE-METRO-3', operator:'MahaMetro Pune', city:'Pune', type:'METRO', shortName:'PM3', longName:'Pune Metro L3: Hinjewadi → Civil Court', frequencyMinutes:8, fareINR:35, crowdLevel:'MEDIUM', color:'#F7941D' },
+  { routeId:'PMPML-BRTS-ALANDI', operator:'PMPML BRTS', city:'Pune', type:'BUS', shortName:'BRTS Alandi', longName:'BRTS: Swargate → Yerwada → Alandi Road', frequencyMinutes:10, fareINR:22, crowdLevel:'HIGH', color:'#CC0000' },
+  { routeId:'PMPML-BRTS-NAGAR',  operator:'PMPML BRTS', city:'Pune', type:'BUS', shortName:'BRTS Nagar',  longName:'BRTS: Pune Station → Yerwada → Wagholi', frequencyMinutes:8,  fareINR:24, crowdLevel:'HIGH', color:'#CC0000' },
+  { routeId:'PMPML-BRTS-KIWALE', operator:'PMPML BRTS', city:'Pimpri Chinchwad', type:'BUS', shortName:'BRTS Kiwale', longName:'BRTS: Kiwale Terminal → Sangvi Phata', frequencyMinutes:12, fareINR:20, crowdLevel:'HIGH', color:'#CC0000' },
+  { routeId:'TRAIN-PUNE-LNL', operator:'Indian Railways', city:'Pimpri Chinchwad', type:'TRAIN', shortName:'LNL Local', longName:'Pune Jn → PCMC → Lonavala', frequencyMinutes:30, fareINR:15, crowdLevel:'HIGH', color:'#003580' },
+  { routeId:'TRAIN-PUNE-TGN', operator:'Indian Railways', city:'Pimpri Chinchwad', type:'TRAIN', shortName:'TGN Local', longName:'Pune Jn → PCMC → Talegaon', frequencyMinutes:45, fareINR:10, crowdLevel:'HIGH', color:'#003580' },
+  // Nagpur Metro
+  { routeId:'NAG-METRO-1', operator:'MahaMetro Nagpur', city:'Nagpur', type:'METRO', shortName:'NM1', longName:'Nagpur Metro: Automotive Sq → Airport', frequencyMinutes:8, fareINR:25, crowdLevel:'MEDIUM', color:'#F7941D' },
+  { routeId:'NAG-METRO-2', operator:'MahaMetro Nagpur', city:'Nagpur', type:'METRO', shortName:'NM2', longName:'Nagpur Metro: Prajapati Nagar → Lokmanya Nagar', frequencyMinutes:8, fareINR:25, crowdLevel:'LOW', color:'#00A651' },
+  { routeId:'NMC-BUS-5',   operator:'NMC City Bus',    city:'Nagpur', type:'BUS',   shortName:'NBus-5', longName:'Nagpur Stn → Sitabuldi → Dharampeth', frequencyMinutes:12, fareINR:12, crowdLevel:'MEDIUM', color:'#C00000' },
+  // Nashik
+  { routeId:'NCLL-1', operator:'Nashik City Link', city:'Nashik', type:'BUS', shortName:'NKBus-1', longName:'CBS → Panchavati → Tapovan',            frequencyMinutes:15, fareINR:10, crowdLevel:'MEDIUM', color:'#FF6600' },
+  { routeId:'NCLL-7', operator:'Nashik City Link', city:'Nashik', type:'BUS', shortName:'NKBus-7', longName:'Nashik Road Stn → Satpur MIDC',         frequencyMinutes:18, fareINR:12, crowdLevel:'LOW',    color:'#FF6600' },
+  // Aurangabad
+  { routeId:'AUCITY-1', operator:'AUCITY Bus', city:'Aurangabad', type:'BUS', shortName:'AU-1', longName:'Bus Stand → MIT College → CIDCO', frequencyMinutes:20, fareINR:10, crowdLevel:'LOW', color:'#009900' },
+  { routeId:'AUCITY-3', operator:'AUCITY Bus', city:'Aurangabad', type:'BUS', shortName:'AU-3', longName:'Railway Stn → Beed Bypass → Waluj MIDC', frequencyMinutes:25, fareINR:14, crowdLevel:'LOW', color:'#009900' },
+  // Solapur
+  { routeId:'SMC-BUS-1', operator:'SMC City Bus', city:'Solapur', type:'BUS', shortName:'SolBus-1', longName:'Solapur Stn → Hutatma Chowk → Akkalkot Rd', frequencyMinutes:20, fareINR:10, crowdLevel:'LOW', color:'#CC0000' },
+  // Kolhapur
+  { routeId:'KMC-BUS-1', operator:'KMC City Bus', city:'Kolhapur', type:'BUS', shortName:'KolBus-1', longName:'Kolhapur Stn → Rankala Lake', frequencyMinutes:25, fareINR:10, crowdLevel:'LOW', color:'#990000' },
+  // MSRTC Inter-city
+  { routeId:'MSRTC-MUM-PUN',   operator:'MSRTC', city:'Inter-city', type:'INTER_CITY_BUS', shortName:'Shivneri',         longName:'AC Shivneri: Mumbai → Pune',           frequencyMinutes:30,  fareINR:280, crowdLevel:'HIGH',   color:'#FF0000' },
+  { routeId:'MSRTC-MUM-NAG',   operator:'MSRTC', city:'Inter-city', type:'INTER_CITY_BUS', shortName:'Nagpur Express',    longName:'Mumbai → Nashik → Nagpur',             frequencyMinutes:120, fareINR:780, crowdLevel:'MEDIUM', color:'#FF0000' },
+  { routeId:'MSRTC-PUN-AUR',   operator:'MSRTC', city:'Inter-city', type:'INTER_CITY_BUS', shortName:'Aurangabad Exp',    longName:'Shivshahi: Pune → Aurangabad',         frequencyMinutes:60,  fareINR:350, crowdLevel:'MEDIUM', color:'#FF0000' },
+  { routeId:'MSRTC-PUN-KOL',   operator:'MSRTC', city:'Inter-city', type:'INTER_CITY_BUS', shortName:'Kolhapur Express',  longName:'Mumbai → Satara → Kolhapur',           frequencyMinutes:90,  fareINR:450, crowdLevel:'HIGH',   color:'#FF0000' },
+  { routeId:'MSRTC-MUM-NK',    operator:'MSRTC', city:'Inter-city', type:'INTER_CITY_BUS', shortName:'Nashik Express',    longName:'Mumbai → Nashik',                      frequencyMinutes:30,  fareINR:260, crowdLevel:'HIGH',   color:'#FF0000' },
+  { routeId:'MSRTC-MUM-SOL',   operator:'MSRTC', city:'Inter-city', type:'INTER_CITY_BUS', shortName:'Solapur Express',   longName:'Shivshahi: Mumbai → Solapur',          frequencyMinutes:120, fareINR:550, crowdLevel:'MEDIUM', color:'#FF0000' },
+  { routeId:'MSRTC-MUM-AUR',   operator:'MSRTC', city:'Inter-city', type:'INTER_CITY_BUS', shortName:'Aurangabad Exp',    longName:'Shivshahi: Mumbai → Aurangabad',       frequencyMinutes:90,  fareINR:580, crowdLevel:'MEDIUM', color:'#FF0000' },
+  { routeId:'MSRTC-MUM-AMRA',  operator:'MSRTC', city:'Inter-city', type:'INTER_CITY_BUS', shortName:'Amravati Express',  longName:'Mumbai → Amravati',                    frequencyMinutes:180, fareINR:850, crowdLevel:'LOW',    color:'#FF0000' },
+  { routeId:'MSRTC-MUM-LAT',   operator:'MSRTC', city:'Inter-city', type:'INTER_CITY_BUS', shortName:'Latur Express',     longName:'Mumbai → Latur',                       frequencyMinutes:240, fareINR:650, crowdLevel:'LOW',    color:'#FF0000' },
+  { routeId:'MSRTC-PUN-NAG',   operator:'MSRTC', city:'Inter-city', type:'INTER_CITY_BUS', shortName:'Pune–Nagpur',       longName:'Shivshahi: Pune → Nagpur',             frequencyMinutes:180, fareINR:700, crowdLevel:'MEDIUM', color:'#FF0000' },
+  { routeId:'MSRTC-NK-PUN',    operator:'MSRTC', city:'Inter-city', type:'INTER_CITY_BUS', shortName:'Nashik–Pune',       longName:'Nashik → Pune',                        frequencyMinutes:60,  fareINR:240, crowdLevel:'HIGH',   color:'#FF0000' },
+  { routeId:'MSRTC-AUR-NAG',   operator:'MSRTC', city:'Inter-city', type:'INTER_CITY_BUS', shortName:'Aurangabad–Nagpur', longName:'Aurangabad → Nagpur',                  frequencyMinutes:120, fareINR:460, crowdLevel:'MEDIUM', color:'#FF0000' },
+  // Inter-city Trains
+  { routeId:'TRAIN-DECCAN-EXP', operator:'Indian Railways', city:'Inter-city', type:'TRAIN', shortName:'Deccan Exp',       longName:'Deccan Express: Pune → Mumbai CSMT',              frequencyMinutes:480,  fareINR:155,  crowdLevel:'HIGH',   color:'#003580' },
+  { routeId:'TRAIN-PANCHAVATI', operator:'Indian Railways', city:'Inter-city', type:'TRAIN', shortName:'Panchavati',        longName:'Panchavati Express: Mumbai → Nashik Road',         frequencyMinutes:960,  fareINR:95,   crowdLevel:'HIGH',   color:'#003580' },
+  { routeId:'TRAIN-DURONTO',    operator:'Indian Railways', city:'Inter-city', type:'TRAIN', shortName:'Duronto',           longName:'Pune–Mumbai Duronto Express',                      frequencyMinutes:720,  fareINR:320,  crowdLevel:'HIGH',   color:'#003580' },
+  { routeId:'TRAIN-INTERCITY',  operator:'Indian Railways', city:'Inter-city', type:'TRAIN', shortName:'Intercity',         longName:'Pune–Nashik Intercity Express',                    frequencyMinutes:720,  fareINR:120,  crowdLevel:'MEDIUM', color:'#003580' },
+  { routeId:'TRAIN-VIDARBHA',   operator:'Indian Railways', city:'Inter-city', type:'TRAIN', shortName:'Vidarbha Exp',      longName:'Vidarbha Express: Mumbai → Nagpur → Amravati',     frequencyMinutes:1440, fareINR:480,  crowdLevel:'MEDIUM', color:'#003580' },
+  { routeId:'TRAIN-KOLKATA-EXP',operator:'Indian Railways', city:'Inter-city', type:'TRAIN', shortName:'Gitanjali Exp',     longName:'Gitanjali Express: Mumbai → Kolkata (via Nagpur)',  frequencyMinutes:2880, fareINR:900,  crowdLevel:'MEDIUM', color:'#003580' },
+  { routeId:'TRAIN-SAHYADRI',   operator:'Indian Railways', city:'Inter-city', type:'TRAIN', shortName:'Sahyadri Exp',      longName:'Sahyadri Express: Mumbai → Kolhapur',              frequencyMinutes:720,  fareINR:210,  crowdLevel:'HIGH',   color:'#003580' },
+  { routeId:'TRAIN-LATUR-EXP',  operator:'Indian Railways', city:'Inter-city', type:'TRAIN', shortName:'Latur Rail',        longName:'Latur Rail: Mumbai → Latur',                       frequencyMinutes:1440, fareINR:230,  crowdLevel:'MEDIUM', color:'#003580' },
+  { routeId:'TRAIN-TAPOVAN',    operator:'Indian Railways', city:'Inter-city', type:'TRAIN', shortName:'Tapovan Exp',       longName:'Tapovan Express: Mumbai → Nashik → Manmad',        frequencyMinutes:720,  fareINR:130,  crowdLevel:'HIGH',   color:'#003580' },
+
+  // ── ADDITIONAL MUMBAI METRO LINES ──
+  { routeId:'MUM-METRO-2B', operator:'MahaMetro Mumbai', city:'Mumbai', type:'METRO', shortName:'M2B', longName:'Metro L2B: D.N. Nagar → Mandale',         frequencyMinutes:5,  fareINR:35,  crowdLevel:'MEDIUM', color:'#F7941D' },
+  { routeId:'MUM-METRO-4',  operator:'MahaMetro Mumbai', city:'Mumbai', type:'METRO', shortName:'M4',  longName:'Metro L4: Wadala → Kasarvadavali',          frequencyMinutes:6,  fareINR:40,  crowdLevel:'MEDIUM', color:'#1E88E5' },
+  { routeId:'MUM-METRO-6',  operator:'MahaMetro Mumbai', city:'Mumbai', type:'METRO', shortName:'M6',  longName:'Metro L6: Swami Samarth Nagar → Vikhroli',  frequencyMinutes:7,  fareINR:40,  crowdLevel:'MEDIUM', color:'#43A047' },
+  { routeId:'MUM-METRO-9',  operator:'MahaMetro Mumbai', city:'Mumbai', type:'METRO', shortName:'M9',  longName:'Metro L9: Dahisar (E) → Mira-Bhayandar',    frequencyMinutes:8,  fareINR:30,  crowdLevel:'LOW',    color:'#8E24AA' },
+
+  // ── ADDITIONAL BEST BUS ROUTES ──
+  { routeId:'BEST-1', operator:'BEST', city:'Mumbai', type:'BUS', shortName:'1', longName:'Mantralaya → Grant Road Station', frequencyMinutes:7, fareINR:10, crowdLevel:'HIGH', color:'#E3000B' },
+  { routeId:'BEST-2', operator:'BEST', city:'Mumbai', type:'BUS', shortName:'2', longName:'Churchgate → Mahim Station', frequencyMinutes:8, fareINR:12, crowdLevel:'HIGH', color:'#E3000B' },
+  { routeId:'BEST-54', operator:'BEST', city:'Mumbai', type:'BUS', shortName:'54', longName:'Andheri Station (W) → Juhu Beach', frequencyMinutes:10, fareINR:12, crowdLevel:'MEDIUM', color:'#E3000B' },
+  { routeId:'BEST-66', operator:'BEST', city:'Mumbai', type:'BUS', shortName:'66', longName:'Bandra Station (W) → Dharavi → Sion', frequencyMinutes:6, fareINR:14, crowdLevel:'HIGH', color:'#E3000B' },
+  { routeId:'BEST-70', operator:'BEST', city:'Mumbai', type:'BUS', shortName:'70', longName:'Borivali Station → Gorai', frequencyMinutes:15, fareINR:15, crowdLevel:'MEDIUM', color:'#E3000B' },
+  { routeId:'BEST-AS201', operator:'BEST', city:'Mumbai', type:'BUS', shortName:'AS-201', longName:'AC: Borivali Station → Andheri Metro', frequencyMinutes:12, fareINR:45, crowdLevel:'LOW', color:'#0057A8' },
+  { routeId:'BEST-AS505', operator:'BEST', city:'Mumbai', type:'BUS', shortName:'AS-505', longName:'AC: Kurla Station → BKC → SEEPZ', frequencyMinutes:10, fareINR:40, crowdLevel:'MEDIUM', color:'#0057A8' },
+  { routeId:'BEST-310', operator:'BEST', city:'Mumbai', type:'BUS', shortName:'310', longName:'Ghatkopar Station → Vikhroli Station', frequencyMinutes:8, fareINR:12, crowdLevel:'HIGH', color:'#E3000B' },
+  { routeId:'BEST-447', operator:'BEST', city:'Mumbai', type:'BUS', shortName:'447', longName:'Mulund Station → Nahur Station', frequencyMinutes:10, fareINR:11, crowdLevel:'MEDIUM', color:'#E3000B' },
+  { routeId:'BEST-513', operator:'BEST', city:'Mumbai', type:'BUS', shortName:'513', longName:'Malad Station → Link Road → Borivali', frequencyMinutes:6, fareINR:12, crowdLevel:'HIGH', color:'#E3000B' },
+  { routeId:'BEST-HARBOUR-CS', operator:'BEST', city:'Mumbai', type:'BUS', shortName:'C-55', longName:'CST → Colaba → Nariman Point', frequencyMinutes:5, fareINR:10, crowdLevel:'MEDIUM', color:'#E3000B' },
+
+  // ── ADDITIONAL MUMBAI SUBURBAN TRAINS ──
+  { routeId:'MUM-WR-SLOW', operator:'Western Railway', city:'Mumbai', type:'TRAIN', shortName:'WR Slow', longName:'Western Line Slow: Churchgate → Andheri', frequencyMinutes:4, fareINR:30, crowdLevel:'HIGH', color:'#0070C0' },
+  { routeId:'MUM-CR-SLOW', operator:'Central Railway', city:'Mumbai', type:'TRAIN', shortName:'CR Slow', longName:'Central Line Slow: CSMT → Thane', frequencyMinutes:4, fareINR:25, crowdLevel:'HIGH', color:'#C00000' },
+  { routeId:'MUM-CR-VASHI', operator:'Central Railway', city:'Navi Mumbai', type:'TRAIN', shortName:'CR Vashi', longName:'Harbour Branch: CSMT → Vashi → Belapur', frequencyMinutes:10, fareINR:40, crowdLevel:'MEDIUM', color:'#7030A0' },
+  { routeId:'MUM-WR-VASAI', operator:'Western Railway', city:'Mumbai', type:'TRAIN', shortName:'Vasai Local', longName:'Vasai Road → Diva → Panvel Shuttle', frequencyMinutes:30, fareINR:30, crowdLevel:'LOW', color:'#0070C0' },
+
+  // ── ADDITIONAL PCMC / NIGDI AREA BUS ROUTES ──
+  { routeId:'PMPML-PCMC-101', operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'101', longName:'Nigdi Depot → Bhosari MIDC', frequencyMinutes:10, fareINR:12, crowdLevel:'HIGH', color:'#0056A7' },
+  { routeId:'PMPML-PCMC-102', operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'102', longName:'Nigdi Depot → Pradhikaran → Akurdi', frequencyMinutes:12, fareINR:10, crowdLevel:'HIGH', color:'#0056A7' },
+  { routeId:'PMPML-PCMC-103', operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'103', longName:'Nigdi Terminus → Sangvi → PCMC Bhavan', frequencyMinutes:8,  fareINR:13, crowdLevel:'HIGH', color:'#0056A7' },
+  { routeId:'PMPML-PCMC-109', operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'109', longName:'Chikhali → Bhosari → Bhimraj Nagar', frequencyMinutes:15, fareINR:14, crowdLevel:'MEDIUM', color:'#0056A7' },
+  { routeId:'PMPML-PCMC-204', operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'204', longName:'Wakad → Chinchwad Station → Nigdi', frequencyMinutes:10, fareINR:16, crowdLevel:'HIGH', color:'#0056A7' },
+  { routeId:'PMPML-PCMC-222', operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'222', longName:'Dehu Road → Akurdi → PCMC Bhavan', frequencyMinutes:20, fareINR:18, crowdLevel:'MEDIUM', color:'#0056A7' },
+  { routeId:'PMPML-PCMC-247', operator:'PMPML', city:'Pimpri Chinchwad', type:'BUS', shortName:'247', longName:'Sangvi → Pimpri Station → Shivajinagar', frequencyMinutes:8,  fareINR:20, crowdLevel:'HIGH', color:'#0056A7' },
+
+  // ── ADDITIONAL PUNE CITY BUS ROUTES ──
+  { routeId:'PMPML-50', operator:'PMPML', city:'Pune', type:'BUS', shortName:'50', longName:'Katraj → Swargate → Shivajinagar', frequencyMinutes:8, fareINR:13, crowdLevel:'HIGH', color:'#0056A7' },
+  { routeId:'PMPML-105', operator:'PMPML', city:'Pune', type:'BUS', shortName:'105', longName:'Kothrud → Deccan → Pune Station', frequencyMinutes:10, fareINR:14, crowdLevel:'HIGH', color:'#0056A7' },
+  { routeId:'PMPML-153', operator:'PMPML', city:'Pune', type:'BUS', shortName:'153', longName:'Warje → Kothrud → FC Road → Shivajinagar', frequencyMinutes:12, fareINR:16, crowdLevel:'HIGH', color:'#0056A7' },
+  { routeId:'PMPML-162', operator:'PMPML', city:'Pune', type:'BUS', shortName:'162', longName:'Baner → Shivajinagar → Hadapsar', frequencyMinutes:10, fareINR:18, crowdLevel:'HIGH', color:'#0056A7' },
+  { routeId:'PMPML-AC-43', operator:'PMPML', city:'Pune', type:'BUS', shortName:'AC-43', longName:'AC: Kothrud → MG Road → Kalyani Nagar', frequencyMinutes:20, fareINR:55, crowdLevel:'MEDIUM', color:'#006633' },
+  { routeId:'PMPML-AC-54', operator:'PMPML', city:'Pune', type:'BUS', shortName:'AC-54', longName:'AC: Hadapsar → Pune Station → Baner', frequencyMinutes:15, fareINR:50, crowdLevel:'MEDIUM', color:'#006633' },
+
+  // ── ADDITIONAL NAGPUR BUS & METRO ──
+  { routeId:'NAG-METRO-OL', operator:'MahaMetro Nagpur', city:'Nagpur', type:'METRO', shortName:'Orange Line', longName:'Nagpur Metro Orange: Automotive Sq → Airport (NAIA)',    frequencyMinutes:8, fareINR:25, crowdLevel:'MEDIUM', color:'#F7941D' },
+  { routeId:'NAG-METRO-AL', operator:'MahaMetro Nagpur', city:'Nagpur', type:'METRO', shortName:'Aqua Line',   longName:'Nagpur Metro Aqua: Prajapati Nagar → Lokmanya Nagar',   frequencyMinutes:8, fareINR:25, crowdLevel:'LOW',    color:'#00BCD4' },
+  { routeId:'NMC-BUS-1',   operator:'NMC City Bus',    city:'Nagpur', type:'BUS', shortName:'NBus-1',  longName:'Nagpur Stn → Gandhi Nagar → Sitabuldi',      frequencyMinutes:10, fareINR:10, crowdLevel:'HIGH',   color:'#C00000' },
+  { routeId:'NMC-BUS-3',   operator:'NMC City Bus',    city:'Nagpur', type:'BUS', shortName:'NBus-3',  longName:'Central Bus Stand → Manewada → Hingna',      frequencyMinutes:15, fareINR:14, crowdLevel:'MEDIUM', color:'#C00000' },
+  { routeId:'NMC-BUS-7',   operator:'NMC City Bus',    city:'Nagpur', type:'BUS', shortName:'NBus-7',  longName:'Sitabuldi → MIDC Butibori',                  frequencyMinutes:20, fareINR:18, crowdLevel:'MEDIUM', color:'#C00000' },
+  { routeId:'NMC-BUS-9',   operator:'NMC City Bus',    city:'Nagpur', type:'BUS', shortName:'NBus-9',  longName:'Nagpur Airport → Dharampeth → Nagpur Stn',   frequencyMinutes:25, fareINR:15, crowdLevel:'LOW',    color:'#C00000' },
+  { routeId:'NMC-BUS-12',  operator:'NMC City Bus',    city:'Nagpur', type:'BUS', shortName:'NBus-12', longName:'Itwari Stn → Gokulpeth → Sadar',             frequencyMinutes:12, fareINR:10, crowdLevel:'MEDIUM', color:'#C00000' },
+
+  // ── NASHIK CITY BUS ──
+  { routeId:'NCLL-3',  operator:'Nashik City Link', city:'Nashik', type:'BUS', shortName:'NKBus-3',  longName:'Nashik Road Stn → Dwarka → CBS',       frequencyMinutes:15, fareINR:12, crowdLevel:'MEDIUM', color:'#FF6600' },
+  { routeId:'NCLL-5',  operator:'Nashik City Link', city:'Nashik', type:'BUS', shortName:'NKBus-5',  longName:'CBS → Cidco → Gangapur Village',        frequencyMinutes:18, fareINR:12, crowdLevel:'LOW',    color:'#FF6600' },
+  { routeId:'NCLL-12', operator:'Nashik City Link', city:'Nashik', type:'BUS', shortName:'NKBus-12', longName:'Nashik Road Stn → Panchvati → Ozar',   frequencyMinutes:20, fareINR:15, crowdLevel:'LOW',    color:'#FF6600' },
+
+  // ── AURANGABAD (SAMBHAJINAGAR) CITY BUS ──
+  { routeId:'AUCITY-5',  operator:'AUCITY Bus', city:'Aurangabad', type:'BUS', shortName:'AU-5',  longName:'CBS → Harsul → Chikalthana Airport', frequencyMinutes:30, fareINR:12, crowdLevel:'LOW',    color:'#009900' },
+  { routeId:'AUCITY-7',  operator:'AUCITY Bus', city:'Aurangabad', type:'BUS', shortName:'AU-7',  longName:'CBS → Garkheda → Cidco Bhavan',       frequencyMinutes:20, fareINR:10, crowdLevel:'MEDIUM', color:'#009900' },
+  { routeId:'AUCITY-10', operator:'AUCITY Bus', city:'Aurangabad', type:'BUS', shortName:'AU-10', longName:'Aurangabad Stn → Waluj MIDC',          frequencyMinutes:15, fareINR:14, crowdLevel:'MEDIUM', color:'#009900' },
+
+  // ── AMRAVATI CITY BUS ──
+  { routeId:'AMT-BUS-1', operator:'AMT City Bus', city:'Amravati', type:'BUS', shortName:'AMT-1', longName:'Amravati Bus Stand → Rajapeth → Fanus Chowk', frequencyMinutes:20, fareINR:10, crowdLevel:'LOW',    color:'#660099' },
+  { routeId:'AMT-BUS-3', operator:'AMT City Bus', city:'Amravati', type:'BUS', shortName:'AMT-3', longName:'Amravati Stn → Shivaji Putla Chowk',          frequencyMinutes:25, fareINR:10, crowdLevel:'LOW',    color:'#660099' },
+
+  // ── LATUR CITY BUS ──
+  { routeId:'LATUR-BUS-1', operator:'LATUR City Bus', city:'Latur', type:'BUS', shortName:'LTR-1', longName:'Latur Stn → Bus Stand → Udgir Rd', frequencyMinutes:25, fareINR:10, crowdLevel:'LOW', color:'#660033' },
+
+  // ── SOLAPUR CITY BUS ──
+  { routeId:'SMC-BUS-2',  operator:'SMC City Bus', city:'Solapur', type:'BUS', shortName:'SolBus-2', longName:'Solapur Stn → Siddheshwar → Kumthe Rd', frequencyMinutes:20, fareINR:10, crowdLevel:'LOW',    color:'#CC0000' },
+  { routeId:'SMC-BUS-5',  operator:'SMC City Bus', city:'Solapur', type:'BUS', shortName:'SolBus-5', longName:'Solapur Airport → Bus Stand',            frequencyMinutes:30, fareINR:12, crowdLevel:'LOW',    color:'#CC0000' },
+
+  // ── KOLHAPUR CITY BUS ──
+  { routeId:'KMC-BUS-3', operator:'KMC City Bus', city:'Kolhapur', type:'BUS', shortName:'KolBus-3', longName:'Kolhapur Stn → MIDC Shiroli → Kagal', frequencyMinutes:30, fareINR:12, crowdLevel:'LOW',    color:'#990000' },
+  { routeId:'KMC-BUS-5', operator:'KMC City Bus', city:'Kolhapur', type:'BUS', shortName:'KolBus-5', longName:'Kolhapur CBS → Ichalkaranji',          frequencyMinutes:25, fareINR:18, crowdLevel:'MEDIUM', color:'#990000' },
+
+
+  // --- DELHI ---
+  { routeId:'DTC-413', operator:'DTC', city:'Delhi', type:'BUS', shortName:'413', longName:'Mehrauli → Nizamuddin Railway Station', frequencyMinutes:12, fareINR:15, crowdLevel:'HIGH', color:'#00A859' },
+  { routeId:'DTC-522', operator:'DTC', city:'Delhi', type:'BUS', shortName:'522', longName:'Ambedkar Nagar → Shivaji Stadium', frequencyMinutes:8, fareINR:20, crowdLevel:'HIGH', color:'#00A859' },
+  { routeId:'DTC-Airport', operator:'DTC AC', city:'Delhi', type:'BUS', shortName:'Airport Exp', longName:'Kashmere Gate ISBT → IGI Airport T3', frequencyMinutes:20, fareINR:100, crowdLevel:'LOW', color:'#0057A8' },
+  { routeId:'DMRC-RED', operator:'DMRC', city:'Delhi', type:'METRO', shortName:'Red Line', longName:'Red Line: Rithala → Dilshad Garden', frequencyMinutes:5, fareINR:50, crowdLevel:'HIGH', color:'#CC0000' },
+  { routeId:'DMRC-YELLOW', operator:'DMRC', city:'Delhi', type:'METRO', shortName:'Yellow Line', longName:'Yellow Line: HUDA City Centre → Samaypur Badli', frequencyMinutes:4, fareINR:60, crowdLevel:'HIGH', color:'#F7D500' },
+  { routeId:'DMRC-BLUE', operator:'DMRC', city:'Delhi', type:'METRO', shortName:'Blue Line', longName:'Blue Line: Dwarka Sec 21 → Noida Electronic City', frequencyMinutes:4, fareINR:60, crowdLevel:'HIGH', color:'#0047AB' },
+
+  // --- BENGALURU ---
+  { routeId:'BMTC-335E', operator:'BMTC', city:'Bengaluru', type:'BUS', shortName:'335E', longName:'Majestic (KBS) → Kadugodi', frequencyMinutes:10, fareINR:25, crowdLevel:'HIGH', color:'#0057A8' },
+  { routeId:'BMTC-500D', operator:'BMTC', city:'Bengaluru', type:'BUS', shortName:'500D', longName:'Hebbal → Silk Board Metro', frequencyMinutes:5, fareINR:30, crowdLevel:'HIGH', color:'#0057A8' },
+  { routeId:'BMTC-KIA9', operator:'BMTC Vayu Vajra', city:'Bengaluru', type:'BUS', shortName:'KIA-9', longName:'Majestic → KIA Airport', frequencyMinutes:20, fareINR:250, crowdLevel:'LOW', color:'#0057A8' },
+  { routeId:'BMRCL-PURPLE', operator:'BMRCL', city:'Bengaluru', type:'METRO', shortName:'Purple Line', longName:'Namma Metro: Challaghatta → Baiyappanahalli', frequencyMinutes:5, fareINR:60, crowdLevel:'HIGH', color:'#9932CC' },
+  { routeId:'BMRCL-GREEN', operator:'BMRCL', city:'Bengaluru', type:'METRO', shortName:'Green Line', longName:'Namma Metro: Nagasandra → Silk Institute', frequencyMinutes:5, fareINR:60, crowdLevel:'HIGH', color:'#007F3E' },
+
+  // --- KOLKATA ---
+  { routeId:'WBTC-S9', operator:'WBTC', city:'Kolkata', type:'BUS', shortName:'S9', longName:'Garia Bus Depot → Karunamoyee', frequencyMinutes:15, fareINR:20, crowdLevel:'MEDIUM', color:'#003366' },
+  { routeId:'WBTC-AC39', operator:'WBTC AC', city:'Kolkata', type:'BUS', shortName:'AC-39', longName:'Howrah Station → Salt Lake Sec V', frequencyMinutes:12, fareINR:40, crowdLevel:'HIGH', color:'#003366' },
+  { routeId:'KMRC-BLUE', operator:'KMRC', city:'Kolkata', type:'METRO', shortName:'Blue Line', longName:'Kolkata Metro: Dakshineswar → Kavi Subhas', frequencyMinutes:5, fareINR:25, crowdLevel:'HIGH', color:'#0047AB' },
+  { routeId:'KOL-SUB-SEALDAH', operator:'Eastern Railway', city:'Kolkata', type:'TRAIN', shortName:'SDAH Local', longName:'Suburban Local: Sealdah → Barrackpore', frequencyMinutes:10, fareINR:10, crowdLevel:'HIGH', color:'#888888' },
+
+  // --- CHENNAI ---
+  { routeId:'MTC-21G', operator:'MTC', city:'Chennai', type:'BUS', shortName:'21G', longName:'Broadway → Tambaram', frequencyMinutes:8, fareINR:18, crowdLevel:'HIGH', color:'#ED1C24' },
+  { routeId:'MTC-570', operator:'MTC', city:'Chennai', type:'BUS', shortName:'570', longName:'CMBT → Siruseri IT Park', frequencyMinutes:15, fareINR:25, crowdLevel:'HIGH', color:'#ED1C24' },
+  { routeId:'CMRL-BLUE', operator:'CMRL', city:'Chennai', type:'METRO', shortName:'Blue Line', longName:'Chennai Metro: Washermenpet → Airport', frequencyMinutes:5, fareINR:50, crowdLevel:'MEDIUM', color:'#0047AB' },
+  { routeId:'CHN-SUB-BEACH', operator:'Southern Railway', city:'Chennai', type:'TRAIN', shortName:'Beach Local', longName:'Suburban Local: Beach → Tambaram', frequencyMinutes:6, fareINR:10, crowdLevel:'HIGH', color:'#888888' },
+
+  // --- HYDERABAD ---
+  { routeId:'TSRTC-218', operator:'TSRTC', city:'Hyderabad', type:'BUS', shortName:'218', longName:'Patancheru → Koti', frequencyMinutes:8, fareINR:22, crowdLevel:'HIGH', color:'#CC3300' },
+  { routeId:'HMRL-RED', operator:'HMRL/L&T', city:'Hyderabad', type:'METRO', shortName:'Red Line', longName:'Hyderabad Metro: Miyapur → LB Nagar', frequencyMinutes:5, fareINR:60, crowdLevel:'HIGH', color:'#CC0000' },
+  { routeId:'HYD-SUB-MMTS', operator:'SCR', city:'Hyderabad', type:'TRAIN', shortName:'MMTS Local', longName:'MMTS Suburban: Lingampalli → Hyderabad', frequencyMinutes:20, fareINR:10, crowdLevel:'MEDIUM', color:'#888888' },
+
+  // --- AHMEDABAD ---
+  { routeId:'AMTS-151', operator:'AMTS', city:'Ahmedabad', type:'BUS', shortName:'151', longName:'Lal Darwaja → Bopal', frequencyMinutes:12, fareINR:15, crowdLevel:'MEDIUM', color:'#FF8C00' },
+  { routeId:'BRTS-1U', operator:'Janmarg BRTS', city:'Ahmedabad', type:'BUS', shortName:'1U', longName:'BRTS: RTO Circle → Maninagar', frequencyMinutes:6, fareINR:18, crowdLevel:'HIGH', color:'#CC0000' },
+  { routeId:'GMRC-PURPLE', operator:'GMRC', city:'Ahmedabad', type:'METRO', shortName:'Purple Line', longName:'Ahmedabad Metro: APMC → Motera Stadium', frequencyMinutes:7, fareINR:35, crowdLevel:'MEDIUM', color:'#9932CC' },
+];
+
+const CROWD = {
+  LOW:    { label:'😊 Comfortable',  color:'var(--low)',  bars:1 },
+  MEDIUM: { label:'🙂 Getting Busy', color:'var(--med)',  bars:2 },
+  HIGH:   { label:'😰 Very Crowded', color:'var(--high)', bars:3 },
+  UNKNOWN:{ label:'❓ No data',       color:'var(--text-faint)', bars:0 }
+};
+
+const TYPE_TAG = {
+  BUS:           { label:'Bus',      cls:''},
+  METRO:         { label:'Metro',    cls:'type-metro'},
+  TRAIN:         { label:'Train',    cls:'type-train'},
+  INTER_CITY_BUS:{ label:'Inter-city', cls:'tag delay'}
+};
+
+// ── Crowd meter HTML ──
+function crowdMeterHTML(level) {
+  const c = CROWD[level] || CROWD.UNKNOWN;
+  const bars = [1,2,3].map(i => {
+    const active = i <= c.bars;
+    return `<div class="crowd-bar" style="background:${active ? c.color : 'var(--text-faint)'}; opacity:${active ? 1 : 0.3}"></div>`;
+  }).join('');
+  return { bars, label: c.label };
+}
+
+// ── Render departure board row ──
+function makeBoardRow(r, etaMinutes) {
+  const isDelayed = r._delay > 0;
+  const typeTag = TYPE_TAG[r.type] || { label: r.type, cls:'' };
+  const { bars, label } = crowdMeterHTML(r.crowdLevel || 'UNKNOWN');
+  const cleanEta = Math.round(etaMinutes);
+  const etaDisplay = cleanEta < 1 ? '&lt;1' : cleanEta;
+  
+  const delayDisplay = isDelayed ? `<span class="tag delay">+${r._delay}m delay</span>` : `<span class="tag ontime">On time</span>`;
+  const liveIndicator = r._isLive ? `<span class="tag ontime" style="background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.25);">● Live</span>` : '';
+
+  return `
+    <div class="board-row">
+      <div class="route-chip" style="border-left:3px solid ${r.color || 'var(--accent)'};">${r.shortName}</div>
+      <div class="route-info">
+        <div class="route-dest">${r.longName}</div>
+        <div class="route-meta">
+          <span class="route-city">${r.city}</span>
+          <span class="tag ${typeTag.cls}">${typeTag.label}</span>
+          ${liveIndicator}
+          <div class="crowd-meter">${bars}</div>
+          <span class="crowd-label">${label}</span>
+          ${delayDisplay}
+        </div>
+      </div>
+      <div class="eta">${etaDisplay}<span class="unit">m</span></div>
+    </div>`;
+}
+
+// ── Departure board with live REST integration + local rolling simulation ──
+let boardRoutes = [];
+let boardTimers = {};
+let activeCityFilter = 'all';
+let isLiveBoard = false;
+
+async function loadLiveDepartures() {
+  try {
+    const res = await fetch('/api/v1/departures');
+    const json = await res.json();
+    if (json.success && json.data && json.data.length > 0) {
+      isLiveBoard = true;
+      const liveIdentifiers = new Set();
+      json.data.forEach(d => {
+        if (d.routeId) liveIdentifiers.add(d.routeId.toLowerCase());
+        if (d.shortName) liveIdentifiers.add(d.shortName.toLowerCase());
+      });
+
+      const liveRoutesMapped = json.data.map(d => {
+        const diffMs = new Date(d.estimatedArrival) - new Date();
+        const etaMinutes = Math.max(0, diffMs / 60000);
+        return {
+          routeId: d.routeId,
+          shortName: d.shortName,
+          longName: d.longName,
+          city: d.city || 'All India',
+          type: d.type,
+          crowdLevel: d.crowdLevel,
+          _delay: Math.round(d.delaySeconds / 60),
+          color: d.color,
+          _eta: etaMinutes,
+          _isLive: true
+        };
+      });
+
+      const staticFallbackRoutes = MAHARASHTRA_ROUTES_STATIC
+        .filter(r => !liveIdentifiers.has(r.routeId.toLowerCase()) && !liveIdentifiers.has(r.shortName.toLowerCase()))
+        .map((r, i) => ({
+          ...r,
+          _eta: (r.frequencyMinutes || 10) * ((i % 4) / 4) | 0,
+          _delay: Math.random() < 0.25 ? Math.ceil(Math.random() * 10) : 0,
+          _isLive: false
+        }));
+
+      boardRoutes = [...liveRoutesMapped, ...staticFallbackRoutes];
+      renderBoard();
+    } else {
+      if (!isLiveBoard) initStaticBoard();
+    }
+  } catch (err) {
+    console.warn("Failed fetching live departures, using static simulation:", err);
+    if (!isLiveBoard) initStaticBoard();
+  }
+}
+
+function initStaticBoard() {
+  isLiveBoard = false;
+  boardRoutes = MAHARASHTRA_ROUTES_STATIC.map((r, i) => ({
+    ...r,
+    _eta: (r.frequencyMinutes || 10) * ((i % 4) / 4) | 0,
+    _delay: Math.random() < 0.25 ? Math.ceil(Math.random() * 10) : 0,
+    _isLive: false
+  }));
+  renderBoard();
+}
+
+function initBoard(routes) {
+  loadLiveDepartures();
+}
+
+function renderBoard() {
+  const board = document.getElementById('board');
+  let filtered = activeCityFilter === 'all'
+    ? boardRoutes
+    : boardRoutes.filter(r => r.city === activeCityFilter);
+  
+  if (filtered.length === 0) {
+    board.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted);">No routes for this city filter.</div>`;
+    return;
+  }
+
+  // Deduplicate by route/shortName, keeping the earliest ETA for each route
+  const seenRoutes = new Set();
+  const deduped = [];
+  const sortedAll = [...filtered].sort((a, b) => a._eta - b._eta);
+
+  for (const r of sortedAll) {
+    const key = `${r.city}-${r.shortName}`.toLowerCase();
+    if (!seenRoutes.has(key)) {
+      seenRoutes.add(key);
+      deduped.push(r);
+    }
+  }
+
+  // Limit to 10 items
+  const sorted = deduped.slice(0, 10);
+  board.innerHTML = sorted.map(r => makeBoardRow(r, r._eta)).join('');
+}
+
+// Countdown tick every second
+function tickETAs() {
+  boardRoutes.forEach(r => {
+    r._eta = Math.max(0, r._eta - (1/60));
+    if (r._eta < 1 && !r._isLive) {
+      r._eta = r.frequencyMinutes || 10;
+      r._delay = Math.random() < 0.2 ? Math.ceil(Math.random() * 8) : 0;
+      r.crowdLevel = ['LOW','MEDIUM','HIGH'][Math.floor(Math.random()*3)];
+    }
+  });
+  renderBoard();
+}
+
+// City filter
+document.getElementById('cityFilterBar').addEventListener('click', e => {
+  const pill = e.target.closest('[data-city]');
+  if (!pill) return;
+  document.querySelectorAll('#cityFilterBar .filter-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  activeCityFilter = pill.dataset.city;
+  renderBoard();
+});
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ALL-INDIA TRANSPORT DATA
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const INDIA_METRO = [
+  { id:'DMRC-RED',     network:'Delhi Metro',       operator:'DMRC',             city:'Delhi',          state:'Delhi',          lineName:'Red Line',          from:'Shahabad Muhammadpur', to:'Dilshad Garden',          stations:29, km:34.6, freq:5,  fareMin:10, fareMax:60,  color:'#CC0000', openYear:2002 },
+  { id:'DMRC-YELLOW',  network:'Delhi Metro',       operator:'DMRC',             city:'Delhi',          state:'Delhi',          lineName:'Yellow Line',       from:'HUDA City Centre',     to:'Samaypur Badli',          stations:37, km:49.0, freq:4,  fareMin:10, fareMax:60,  color:'#F7D500', openYear:2004 },
+  { id:'DMRC-BLUE',    network:'Delhi Metro',       operator:'DMRC',             city:'Delhi',          state:'Delhi',          lineName:'Blue Line',         from:'Dwarka Sec 21',        to:'Noida Electronic City',  stations:50, km:57.2, freq:4,  fareMin:10, fareMax:60,  color:'#0047AB', openYear:2005 },
+  { id:'DMRC-GREEN',   network:'Delhi Metro',       operator:'DMRC',             city:'Delhi',          state:'Delhi',          lineName:'Green Line',        from:'Inderlok',             to:'Brigadier Hoshiyar Singh',stations:21, km:29.6, freq:6,  fareMin:10, fareMax:50,  color:'#007F3E', openYear:2010 },
+  { id:'DMRC-VIOLET',  network:'Delhi Metro',       operator:'DMRC',             city:'Delhi',          state:'Delhi',          lineName:'Violet Line',       from:'Kashmere Gate',        to:'Raja Nahar Singh',        stations:35, km:46.6, freq:5,  fareMin:10, fareMax:60,  color:'#9932CC', openYear:2010 },
+  { id:'DMRC-PINK',    network:'Delhi Metro',       operator:'DMRC',             city:'Delhi',          state:'Delhi',          lineName:'Pink Line',         from:'Majlis Park',          to:'Shiv Vihar',              stations:38, km:58.6, freq:5,  fareMin:10, fareMax:60,  color:'#FF69B4', openYear:2018 },
+  { id:'DMRC-MAGENTA', network:'Delhi Metro',       operator:'DMRC',             city:'Delhi',          state:'Delhi',          lineName:'Magenta Line',      from:'Janakpuri West',       to:'Botanical Garden',        stations:25, km:37.5, freq:5,  fareMin:10, fareMax:60,  color:'#D83078', openYear:2017 },
+  { id:'DMRC-AE',      network:'Delhi Metro',       operator:'DMRC',             city:'Delhi',          state:'Delhi',          lineName:'Airport Express',   from:'New Delhi',            to:'Dwarka Sec 21',           stations:6,  km:22.7, freq:10, fareMin:60, fareMax:100, color:'#F7941D', openYear:2011 },
+  { id:'DMRC-GREY',    network:'Delhi Metro',       operator:'DMRC',             city:'Delhi',          state:'Delhi',          lineName:'Grey Line',         from:'Dwarka',               to:'Dhansa Bus Stand',        stations:3,  km:4.3,  freq:8,  fareMin:10, fareMax:30,  color:'#808080', openYear:2019 },
+  { id:'NMRC-AQUA',    network:'Noida Metro',       operator:'NMRC',             city:'Noida',          state:'Uttar Pradesh',  lineName:'Aqua Line',         from:'Sector 51',            to:'Depot Station',           stations:21, km:29.7, freq:7,  fareMin:10, fareMax:50,  color:'#00CED1', openYear:2019 },
+  { id:'MUM-M1',       network:'Mumbai Metro',      operator:'Mumbai Metro One', city:'Mumbai',         state:'Maharashtra',    lineName:'Line 1',            from:'Versova',              to:'Ghatkopar',               stations:12, km:11.4, freq:4,  fareMin:10, fareMax:40,  color:'#E30613', openYear:2014 },
+  { id:'MUM-M2A',      network:'Mumbai Metro',      operator:'MahaMetro',        city:'Mumbai',         state:'Maharashtra',    lineName:'Line 2A',           from:'Dahisar (E)',           to:'D.N. Nagar',              stations:17, km:18.5, freq:5,  fareMin:10, fareMax:35,  color:'#F7941D', openYear:2022 },
+  { id:'MUM-M7',       network:'Mumbai Metro',      operator:'MahaMetro',        city:'Mumbai',         state:'Maharashtra',    lineName:'Line 7',            from:'Andheri (E)',           to:'Dahisar (E)',             stations:13, km:16.5, freq:5,  fareMin:10, fareMax:35,  color:'#ED1C24', openYear:2022 },
+  { id:'MUM-M2B',      network:'Mumbai Metro',      operator:'MahaMetro',        city:'Mumbai',         state:'Maharashtra',    lineName:'Line 2B',           from:'D.N. Nagar',            to:'Mandale',                 stations:23, km:23.6, freq:5,  fareMin:10, fareMax:35,  color:'#F7941D', openYear:2023 },
+  { id:'MUM-M4',       network:'Mumbai Metro',      operator:'MahaMetro',        city:'Mumbai',         state:'Maharashtra',    lineName:'Line 4',            from:'Wadala',                to:'Kasarvadavali (Thane)',    stations:32, km:35.2, freq:6,  fareMin:10, fareMax:40,  color:'#1E88E5', openYear:2024 },
+  { id:'MUM-M6',       network:'Mumbai Metro',      operator:'MahaMetro',        city:'Mumbai',         state:'Maharashtra',    lineName:'Line 6',            from:'Swami Samarth Nagar',   to:'Vikhroli',                stations:13, km:14.5, freq:7,  fareMin:10, fareMax:40,  color:'#43A047', openYear:2024 },
+  { id:'MUM-M9',       network:'Mumbai Metro',      operator:'MahaMetro',        city:'Mumbai',         state:'Maharashtra',    lineName:'Line 9',            from:'Dahisar (E)',            to:'Mira-Bhayandar',          stations:6,  km:6.5,  freq:8,  fareMin:10, fareMax:30,  color:'#8E24AA', openYear:2024 },
+  { id:'MUM-MONO',     network:'Mumbai Monorail',   operator:'MMRDA',            city:'Mumbai',         state:'Maharashtra',    lineName:'Monorail',          from:'Jacob Circle',           to:'Chembur',                 stations:17, km:19.5, freq:15, fareMin:10, fareMax:30,  color:'#FF8C00', openYear:2014 },
+  { id:'NMM-M1',       network:'Navi Mumbai Metro', operator:'CIDCO',            city:'Navi Mumbai',    state:'Maharashtra',    lineName:'Line 1',            from:'Belapur CBD',            to:'Pendhar',                 stations:11, km:11.1, freq:10, fareMin:10, fareMax:30,  color:'#008080', openYear:2023 },
+  { id:'PNQ-M3',       network:'Pune Metro',        operator:'MahaMetro',        city:'Pune',           state:'Maharashtra',    lineName:'Line 3 (Hinjewadi)', from:'Hinjewadi',             to:'Civil Court',             stations:23, km:23.3, freq:8,  fareMin:10, fareMax:35,  color:'#F7941D', openYear:2024 },
+
+  { id:'KOL-BLUE',     network:'Kolkata Metro',     operator:'KMRC',             city:'Kolkata',        state:'West Bengal',    lineName:'Blue Line (NS)',     from:'Dakshineswar',         to:'Kavi Subhas',             stations:32, km:31.8, freq:5,  fareMin:5,  fareMax:25,  color:'#0047AB', openYear:1984 },
+  { id:'KOL-GREEN',    network:'Kolkata Metro',     operator:'KMRC',             city:'Kolkata',        state:'West Bengal',    lineName:'Green Line (EW)',    from:'Howrah Maidan',        to:'Salt Lake Sec V',         stations:13, km:16.6, freq:7,  fareMin:5,  fareMax:30,  color:'#00A651', openYear:2020 },
+  { id:'CMRL-BLUE',    network:'Chennai Metro',     operator:'CMRL',             city:'Chennai',        state:'Tamil Nadu',     lineName:'Blue Line',         from:'Washermenpet',         to:'Chennai Airport',         stations:23, km:23.1, freq:5,  fareMin:10, fareMax:50,  color:'#0047AB', openYear:2015 },
+  { id:'CMRL-GREEN',   network:'Chennai Metro',     operator:'CMRL',             city:'Chennai',        state:'Tamil Nadu',     lineName:'Green Line',        from:'Wimco Nagar',          to:'St. Thomas Mount',        stations:18, km:22.0, freq:5,  fareMin:10, fareMax:50,  color:'#00A651', openYear:2015 },
+  { id:'BMRCL-PURPLE', network:'Namma Metro',       operator:'BMRCL',            city:'Bengaluru',      state:'Karnataka',      lineName:'Purple Line',       from:'Challaghatta',         to:'Baiyappanahalli',         stations:37, km:43.5, freq:5,  fareMin:10, fareMax:60,  color:'#9932CC', openYear:2011 },
+  { id:'BMRCL-GREEN',  network:'Namma Metro',       operator:'BMRCL',            city:'Bengaluru',      state:'Karnataka',      lineName:'Green Line',        from:'Nagasandra',           to:'Silk Institute',          stations:32, km:38.8, freq:5,  fareMin:10, fareMax:60,  color:'#007F3E', openYear:2014 },
+  { id:'HMRL-RED',     network:'Hyderabad Metro',   operator:'HMRL/L&T',         city:'Hyderabad',      state:'Telangana',      lineName:'Red Line',          from:'Miyapur',              to:'LB Nagar',                stations:27, km:29.2, freq:5,  fareMin:10, fareMax:60,  color:'#CC0000', openYear:2017 },
+  { id:'HMRL-BLUE',    network:'Hyderabad Metro',   operator:'HMRL/L&T',         city:'Hyderabad',      state:'Telangana',      lineName:'Blue Line',         from:'JBS Parade Ground',    to:'MGBS',                    stations:16, km:15.0, freq:6,  fareMin:10, fareMax:55,  color:'#0047AB', openYear:2018 },
+  { id:'HMRL-GREEN',   network:'Hyderabad Metro',   operator:'HMRL/L&T',         city:'Hyderabad',      state:'Telangana',      lineName:'Green Line',        from:'Nagole',               to:'Raidurg',                 stations:16, km:14.0, freq:6,  fareMin:10, fareMax:50,  color:'#00A651', openYear:2018 },
+  { id:'PNQ-M1',       network:'Pune Metro',        operator:'MahaMetro',        city:'Pune',           state:'Maharashtra',    lineName:'Line 1 (Purple)',   from:'PCMC',                 to:'Swargate',                stations:14, km:17.5, freq:6,  fareMin:10, fareMax:30,  color:'#9B59B6', openYear:2023 },
+  { id:'PNQ-M2',       network:'Pune Metro',        operator:'MahaMetro',        city:'Pune',           state:'Maharashtra',    lineName:'Line 2 (Aqua)',     from:'Vanaz',                to:'Ramwadi',                 stations:16, km:14.7, freq:7,  fareMin:10, fareMax:30,  color:'#00BCD4', openYear:2023 },
+  { id:'NAG-OE',       network:'Nagpur Metro',      operator:'MahaMetro',        city:'Nagpur',         state:'Maharashtra',    lineName:'Orange Line',       from:'Automotive Square',    to:'Airport South',           stations:19, km:18.6, freq:7,  fareMin:10, fareMax:25,  color:'#F7941D', openYear:2019 },
+  { id:'NAG-AQ',       network:'Nagpur Metro',      operator:'MahaMetro',        city:'Nagpur',         state:'Maharashtra',    lineName:'Aqua Line',         from:'Prajapati Nagar',      to:'Lokmanya Nagar',          stations:10, km:10.6, freq:8,  fareMin:10, fareMax:25,  color:'#00BCD4', openYear:2019 },
+  { id:'COK-M1',       network:'Kochi Metro',       operator:'KMRL',             city:'Kochi',          state:'Kerala',         lineName:'Blue Line',         from:'Thrippunithura',       to:'Petta',                   stations:25, km:28.2, freq:6,  fareMin:10, fareMax:40,  color:'#0047AB', openYear:2017 },
+  { id:'JAI-M1',       network:'Jaipur Metro',      operator:'JMC',              city:'Jaipur',         state:'Rajasthan',      lineName:'Pink Line',         from:'Mansarovar',           to:'Chandpol',                stations:9,  km:9.0,  freq:7,  fareMin:10, fareMax:25,  color:'#FF69B4', openYear:2015 },
+  { id:'LKO-M1',       network:'Lucknow Metro',     operator:'LMRCL',            city:'Lucknow',        state:'Uttar Pradesh',  lineName:'Red Line (NS)',      from:'CCS Airport',          to:'Munshipulia',             stations:21, km:22.9, freq:6,  fareMin:10, fareMax:40,  color:'#CC0000', openYear:2017 },
+  { id:'AMD-M1',       network:'Ahmedabad Metro',   operator:'GMRC',             city:'Ahmedabad',      state:'Gujarat',        lineName:'Purple Line',       from:'APMC Vatva',           to:'Motera Stadium',          stations:16, km:21.0, freq:7,  fareMin:10, fareMax:35,  color:'#9932CC', openYear:2022 },
+  { id:'AMD-M2',       network:'Ahmedabad Metro',   operator:'GMRC',             city:'Ahmedabad',      state:'Gujarat',        lineName:'Aqua Line',         from:'Thaltej Gam',          to:'Vastral Gam',             stations:15, km:19.8, freq:7,  fareMin:10, fareMax:35,  color:'#00BCD4', openYear:2022 },
+  { id:'KNP-M1',       network:'Kanpur Metro',      operator:'UPMRC',            city:'Kanpur',         state:'Uttar Pradesh',  lineName:'Corridor 1',        from:'IIT Kanpur',           to:'Naubasta',                stations:22, km:23.8, freq:8,  fareMin:10, fareMax:40,  color:'#CC0000', openYear:2021 },
+  { id:'AGR-M1',       network:'Agra Metro',        operator:'UPMRC',            city:'Agra',           state:'Uttar Pradesh',  lineName:'Priority Corridor', from:'Sikandra',             to:'Taj East Gate',           stations:6,  km:6.0,  freq:10, fareMin:10, fareMax:25,  color:'#F7941D', openYear:2024 },
+  { id:'RRTS-DM',      network:'Delhi-Meerut RRTS', operator:'NCRTC',            city:'Delhi-Meerut',   state:'Delhi/UP',       lineName:'RRTS Corridor 1',   from:'Sahibabad',            to:'Modipuram (Meerut)',      stations:22, km:82.0, freq:15, fareMin:20, fareMax:150, color:'#CC0000', openYear:2023 },
+  { id:'SUR-M1',       network:'Surat Metro',       operator:'GMRC (Surat)',     city:'Surat',          state:'Gujarat',        lineName:'Line 1',            from:'Sarthana',             to:'Dream City',              stations:20, km:21.6, freq:9,  fareMin:10, fareMax:35,  color:'#0047AB', openYear:2026 },
+  { id:'PAT-M1',       network:'Patna Metro',       operator:'PMRC',             city:'Patna',          state:'Bihar',          lineName:'Red Line',          from:'Danapur',              to:'Patna Sahib',             stations:24, km:16.9, freq:10, fareMin:10, fareMax:30,  color:'#CC0000', openYear:2025 },
+  { id:'BHO-M1',       network:'Bhopal Metro',      operator:'MPMRC',            city:'Bhopal',         state:'Madhya Pradesh', lineName:'Purple Line',       from:'AIIMS Bhopal',         to:'Karond Circle',           stations:16, km:14.4, freq:9,  fareMin:10, fareMax:30,  color:'#9932CC', openYear:2024 },
+  { id:'GGN-RM',       network:'Rapid Metro',       operator:'Rapid Metro GGN',  city:'Gurugram',       state:'Haryana',        lineName:'Rapid Metro',       from:'Sector 55-56',         to:'Sikanderpur',             stations:11, km:11.7, freq:6,  fareMin:10, fareMax:30,  color:'#F7941D', openYear:2013 },
+];
+
+// Append all India Metro routes to MAHARASHTRA_ROUTES_STATIC to ensure they show up in Bus & Train Times tab
+INDIA_METRO.forEach(m => {
+  const exists = MAHARASHTRA_ROUTES_STATIC.some(r => r.routeId === m.id);
+  if (!exists) {
+    MAHARASHTRA_ROUTES_STATIC.push({
+      routeId: m.id,
+      operator: m.operator,
+      city: m.city,
+      type: 'METRO',
+      shortName: m.lineName,
+      longName: `${m.network}: ${m.from} → ${m.to}`,
+      frequencyMinutes: m.freq,
+      fareINR: m.fareMin,
+      crowdLevel: ['LOW', 'MEDIUM', 'HIGH'][Math.floor(Math.random() * 3)],
+      color: m.color
+    });
+  }
+});
+
+const INDIA_BUS = [
+  { id:'MSRTC-MUM-PUN',  op:'MSRTC',      state:'Maharashtra',      cls:'AC Shivneri',    from:'Mumbai (Dadar)',         to:'Pune (Swargate)',      km:156,  dur:3.5,  fare:280, freq:'Every 30 min',  color:'#CC0000' },
+  { id:'MSRTC-MUM-NAS',  op:'MSRTC',      state:'Maharashtra',      cls:'Semi-Luxury',    from:'Mumbai (CBS)',           to:'Nashik (CBS)',         km:165,  dur:3.0,  fare:260, freq:'Every 30 min',  color:'#CC0000' },
+  { id:'MSRTC-MUM-NAG',  op:'MSRTC',      state:'Maharashtra',      cls:'Shivneri AC',    from:'Mumbai (Central ST)',    to:'Nagpur',              km:835,  dur:13.0, fare:780, freq:'Every 2 hr',    color:'#CC0000' },
+  { id:'MSRTC-PUN-KOL',  op:'MSRTC',      state:'Maharashtra',      cls:'Shivshahi AC',   from:'Pune (Swargate)',        to:'Kolhapur',            km:228,  dur:4.5,  fare:450, freq:'Every 90 min',  color:'#CC0000' },
+  { id:'MSRTC-PUN-AUR',  op:'MSRTC',      state:'Maharashtra',      cls:'Shivshahi',      from:'Pune (Swargate)',        to:'Aurangabad',          km:235,  dur:5.0,  fare:350, freq:'Every 1 hr',    color:'#CC0000' },
+  { id:'KSRTC-BLR-MYS',  op:'KSRTC-KA',   state:'Karnataka',        cls:'Airavat AC',     from:'Bengaluru (Majestic)',  to:'Mysuru',              km:143,  dur:2.5,  fare:210, freq:'Every 15 min',  color:'#CC0000' },
+  { id:'KSRTC-BLR-HBL',  op:'KSRTC-KA',   state:'Karnataka',        cls:'Airavat Gold',   from:'Bengaluru',             to:'Hubli',               km:418,  dur:7.0,  fare:520, freq:'Every 1 hr',    color:'#CC0000' },
+  { id:'KSRTC-BLR-MNG',  op:'KSRTC-KA',   state:'Karnataka',        cls:'Airavat Club',   from:'Bengaluru',             to:'Mangaluru',           km:350,  dur:7.0,  fare:600, freq:'Every 2 hr',    color:'#CC0000' },
+  { id:'KSRTC-BLR-GOA',  op:'KSRTC-KA',   state:'Karnataka',        cls:'Volvo AC',       from:'Bengaluru',             to:'Panaji (Goa)',        km:570,  dur:10.0, fare:900, freq:'5 per day',     color:'#CC0000' },
+  { id:'KSRTC-KL-TRV',   op:'KSRTC-KL',   state:'Kerala',           cls:'Super Fast',     from:'Thiruvananthapuram',    to:'Kochi (Ernakulam)',  km:220,  dur:4.0,  fare:175, freq:'Every 30 min',  color:'#FF6600' },
+  { id:'KSRTC-KL-KOZ',   op:'KSRTC-KL',   state:'Kerala',           cls:'Super Deluxe',   from:'Kozhikode',             to:'Thiruvananthapuram', km:430,  dur:8.0,  fare:360, freq:'Every 1 hr',    color:'#FF6600' },
+  { id:'TNSTC-CHN-COI',  op:'TNSTC',      state:'Tamil Nadu',       cls:'Ultra Deluxe',   from:'Chennai (CMBT)',        to:'Coimbatore',         km:495,  dur:8.0,  fare:400, freq:'Every 30 min',  color:'#003580' },
+  { id:'TNSTC-CHN-MDR',  op:'TNSTC',      state:'Tamil Nadu',       cls:'AC Sleeper',     from:'Chennai',               to:'Madurai',            km:465,  dur:8.0,  fare:380, freq:'Every 45 min',  color:'#003580' },
+  { id:'TNSTC-COI-OTY',  op:'TNSTC',      state:'Tamil Nadu',       cls:'Ordinary',       from:'Coimbatore',            to:'Ooty (Nilgiris)',    km:86,   dur:2.5,  fare:65,  freq:'Every 30 min',  color:'#003580' },
+  { id:'TSRTC-HYD-VJA',  op:'TSRTC',      state:'Telangana',        cls:'Volvo AC',       from:'Hyderabad (MG BS)',     to:'Vijayawada',         km:273,  dur:5.0,  fare:380, freq:'Every 20 min',  color:'#CC3300' },
+  { id:'TSRTC-HYD-BLR',  op:'TSRTC',      state:'Telangana',        cls:'Garuda AC',      from:'Hyderabad',             to:'Bengaluru',          km:575,  dur:9.5,  fare:700, freq:'Every 30 min',  color:'#CC3300' },
+  { id:'TSRTC-HYD-MUM',  op:'TSRTC',      state:'Telangana',        cls:'Sleeper AC',     from:'Hyderabad',             to:'Mumbai',             km:711,  dur:12.0, fare:900, freq:'3 per day',     color:'#CC3300' },
+  { id:'APSRTC-VJA-VSK', op:'APSRTC',     state:'Andhra Pradesh',   cls:'Volvo AC',       from:'Vijayawada',            to:'Visakhapatnam',      km:365,  dur:6.0,  fare:450, freq:'Every 30 min',  color:'#006600' },
+  { id:'APSRTC-VJA-TIR', op:'APSRTC',     state:'Andhra Pradesh',   cls:'Super Luxury',   from:'Vijayawada',            to:'Tirupati',           km:366,  dur:6.5,  fare:420, freq:'Every 1 hr',    color:'#006600' },
+  { id:'UPSRTC-LKO-DEL', op:'UPSRTC',     state:'Uttar Pradesh',    cls:'Jan Rath AC',    from:'Lucknow (Alambagh)',    to:'Delhi (ISBT)',       km:577,  dur:9.0,  fare:550, freq:'Every 30 min',  color:'#006633' },
+  { id:'UPSRTC-AGR-DEL', op:'UPSRTC',     state:'Uttar Pradesh',    cls:'Volvo AC',       from:'Agra (ISBT)',           to:'Delhi (ISBT)',       km:200,  dur:3.5,  fare:280, freq:'Every 20 min',  color:'#006633' },
+  { id:'UPSRTC-LKO-VNS', op:'UPSRTC',     state:'Uttar Pradesh',    cls:'AC Sleeper',     from:'Lucknow',               to:'Varanasi',           km:340,  dur:6.0,  fare:320, freq:'Every 1 hr',    color:'#006633' },
+  { id:'GSRTC-AMD-SUR',  op:'GSRTC',      state:'Gujarat',          cls:'Volvo AC',       from:'Ahmedabad (Lal Darwaja)',to:'Surat',             km:270,  dur:5.0,  fare:300, freq:'Every 30 min',  color:'#003580' },
+  { id:'GSRTC-AMD-MUM',  op:'GSRTC',      state:'Gujarat',          cls:'Sleeper AC',     from:'Ahmedabad',             to:'Mumbai',             km:530,  dur:9.0,  fare:600, freq:'Every 1 hr',    color:'#003580' },
+  { id:'RSRTC-JPR-DEL',  op:'RSRTC',      state:'Rajasthan',        cls:'Volvo AC',       from:'Jaipur (Sindhi Camp)',  to:'Delhi (ISBT)',       km:280,  dur:5.0,  fare:380, freq:'Every 30 min',  color:'#FF9900' },
+  { id:'RSRTC-JPR-UDR',  op:'RSRTC',      state:'Rajasthan',        cls:'Volvo AC',       from:'Jaipur',                to:'Udaipur',            km:395,  dur:7.0,  fare:450, freq:'Every 2 hr',    color:'#FF9900' },
+  { id:'HRTC-SML-DEL',   op:'HRTC',       state:'Himachal Pradesh', cls:'Volvo AC',       from:'Shimla',                to:'Delhi (ISBT)',       km:370,  dur:8.0,  fare:680, freq:'Every 2 hr',    color:'#990000' },
+  { id:'HRTC-MNL-CHD',   op:'HRTC',       state:'Himachal Pradesh', cls:'Semi-Luxury',    from:'Manali',                to:'Chandigarh',         km:310,  dur:10.0, fare:650, freq:'3 per day',     color:'#990000' },
+  { id:'PRTC-CHD-DEL',   op:'PEPSU',      state:'Punjab',           cls:'Volvo AC',       from:'Chandigarh',            to:'Delhi',              km:248,  dur:4.5,  fare:350, freq:'Every 20 min',  color:'#003399' },
+  { id:'PRTC-CHD-AMR',   op:'PEPSU',      state:'Punjab',           cls:'AC Deluxe',      from:'Chandigarh',            to:'Amritsar',           km:230,  dur:4.0,  fare:280, freq:'Every 30 min',  color:'#003399' },
+  { id:'OSRTC-BBN-KLK',  op:'OSRTC',      state:'Odisha',           cls:'Volvo AC',       from:'Bhubaneswar',           to:'Kolkata',            km:465,  dur:9.0,  fare:550, freq:'Every 2 hr',    color:'#006666' },
+  { id:'WBTC-KOL-SIL',   op:'WBTC',       state:'West Bengal',      cls:'Rocket AC',      from:'Kolkata (Esplanade)',   to:'Siliguri',           km:592,  dur:10.0, fare:600, freq:'Every 1 hr',    color:'#003366' },
+  { id:'JK-SRG-LEH',     op:'J&K SRTC',   state:'Jammu & Kashmir',  cls:'Ordinary',       from:'Srinagar',              to:'Leh (via Zoji La)', km:434,  dur:12.0, fare:500, freq:'Daily (summer)', color:'#336699' },
+  { id:'KTCL-PNJ-MUM',   op:'KTCL (Goa)', state:'Goa',              cls:'Semi-Luxury',    from:'Panaji (Kadamba)',      to:'Mumbai',             km:590,  dur:10.0, fare:700, freq:'3 per day',     color:'#006633' },
+  { id:'ASTC-GUW-SIL',   op:'ASTC',       state:'Assam',            cls:'AC Express',     from:'Guwahati',              to:'Silchar',            km:315,  dur:8.0,  fare:350, freq:'Every 2 hr',    color:'#660033' },
+  { id:'BSRTC-PAT-DEL',  op:'BSRTC',      state:'Bihar',            cls:'Volvo AC',       from:'Patna (Mithapur)',      to:'Delhi',              km:1060, dur:16.0, fare:950, freq:'2 per day',     color:'#990099' },
+];
+
+const INDIA_TRAIN = [
+  { no:'22436', name:'New Delhi-Varanasi Vande Bharat',           type:'VANDE_BHARAT', from:'New Delhi',       to:'Varanasi',           km:759,  dur:8.5,  fareCC:1400, fareExec:2600, fare3AC:null, dep:'06:00', freq:'Daily',  zone:'NCR', color:'#003580' },
+  { no:'22439', name:'New Delhi-Amb Andaura Vande Bharat',        type:'VANDE_BHARAT', from:'New Delhi',       to:'Amb Andaura (HP)',   km:435,  dur:5.5,  fareCC:1200, fareExec:2200, fare3AC:null, dep:'05:30', freq:'Daily',  zone:'NR',  color:'#003580' },
+  { no:'20901', name:'Mumbai-Gandhinagar Vande Bharat',           type:'VANDE_BHARAT', from:'Mumbai Central',  to:'Gandhinagar Capital',km:490,  dur:5.5,  fareCC:1200, fareExec:2300, fare3AC:null, dep:'06:10', freq:'Daily',  zone:'WR',  color:'#003580' },
+  { no:'20631', name:'Chennai-Mysuru Vande Bharat',               type:'VANDE_BHARAT', from:'Chennai Central', to:'Mysuru',             km:498,  dur:6.0,  fareCC:1250, fareExec:2300, fare3AC:null, dep:'05:50', freq:'Daily',  zone:'SR',  color:'#003580' },
+  { no:'20634', name:'Bengaluru-Chennai Vande Bharat',            type:'VANDE_BHARAT', from:'Bengaluru Jn',    to:'Chennai Central',    km:362,  dur:5.0,  fareCC:1150, fareExec:2100, fare3AC:null, dep:'06:00', freq:'Daily',  zone:'SWR', color:'#003580' },
+  { no:'20648', name:'Thiruvananthapuram-Kasaragod Vande Bharat', type:'VANDE_BHARAT', from:'Trivandrum',      to:'Kasaragod',          km:598,  dur:7.5,  fareCC:1300, fareExec:2400, fare3AC:null, dep:'05:45', freq:'Daily',  zone:'SR',  color:'#003580' },
+  { no:'22473', name:'Bikaner-Delhi Vande Bharat',                type:'VANDE_BHARAT', from:'Bikaner',         to:'Delhi Sarai Rohilla',km:450,  dur:6.0,  fareCC:1200, fareExec:2200, fare3AC:null, dep:'05:55', freq:'Daily',  zone:'NWR', color:'#003580' },
+  { no:'12301', name:'Howrah Rajdhani Express',                   type:'RAJDHANI',     from:'Howrah',          to:'New Delhi',          km:1450, dur:17.0, fareCC:null, fareExec:null, fare3AC:2300, dep:'14:05', freq:'Daily',  zone:'ER',  color:'#003580' },
+  { no:'12951', name:'Mumbai Central Rajdhani',                   type:'RAJDHANI',     from:'Mumbai Central',  to:'New Delhi',          km:1384, dur:15.5, fareCC:null, fareExec:null, fare3AC:2200, dep:'17:00', freq:'Daily',  zone:'WR',  color:'#003580' },
+  { no:'12431', name:'Thiruvananthapuram Rajdhani',               type:'RAJDHANI',     from:'Trivandrum',      to:'Hazrat Nizamuddin',  km:2820, dur:46.5, fareCC:null, fareExec:null, fare3AC:3800, dep:'10:25', freq:'3/week', zone:'SR',  color:'#003580' },
+  { no:'12423', name:'Dibrugarh Rajdhani',                        type:'RAJDHANI',     from:'Dibrugarh',       to:'New Delhi',          km:2424, dur:36.5, fareCC:null, fareExec:null, fare3AC:3500, dep:'09:30', freq:'Daily',  zone:'NFR', color:'#003580' },
+  { no:'22691', name:'Bengaluru Rajdhani',                        type:'RAJDHANI',     from:'Bengaluru Jn',    to:'Hazrat Nizamuddin',  km:2350, dur:33.0, fareCC:null, fareExec:null, fare3AC:3400, dep:'20:00', freq:'Daily',  zone:'SWR', color:'#003580' },
+  { no:'12957', name:'Swarna Jayanti Rajdhani (Ahmedabad)',       type:'RAJDHANI',     from:'Ahmedabad',       to:'New Delhi',          km:934,  dur:12.5, fareCC:null, fareExec:null, fare3AC:1800, dep:'17:25', freq:'Daily',  zone:'WR',  color:'#003580' },
+  { no:'12309', name:'Rajendra Nagar Rajdhani (Patna)',           type:'RAJDHANI',     from:'Patna',           to:'New Delhi',          km:1015, dur:12.5, fareCC:null, fareExec:null, fare3AC:1900, dep:'21:20', freq:'Daily',  zone:'ECR', color:'#003580' },
+  { no:'12001', name:'Bhopal Shatabdi Express',                   type:'SHATABDI',     from:'New Delhi',       to:'Bhopal Jn',          km:706,  dur:8.0,  fareCC:1300, fareExec:2500, fare3AC:null, dep:'06:00', freq:'Daily',  zone:'NCR', color:'#E3000B' },
+  { no:'12007', name:'Chennai Shatabdi Express',                  type:'SHATABDI',     from:'Chennai Central', to:'Mysuru',             km:497,  dur:6.0,  fareCC:1200, fareExec:2300, fare3AC:null, dep:'06:00', freq:'Daily',  zone:'SR',  color:'#E3000B' },
+  { no:'12015', name:'Ajmer Shatabdi Express',                    type:'SHATABDI',     from:'New Delhi',       to:'Ajmer',              km:441,  dur:5.5,  fareCC:1050, fareExec:2000, fare3AC:null, dep:'06:05', freq:'Daily',  zone:'NWR', color:'#E3000B' },
+  { no:'12021', name:'Howrah-NJP Shatabdi',                       type:'SHATABDI',     from:'Howrah',          to:'New Jalpaiguri',     km:568,  dur:7.5,  fareCC:1100, fareExec:2100, fare3AC:null, dep:'06:00', freq:'Daily',  zone:'ER',  color:'#E3000B' },
+  { no:'12031', name:'Amritsar Shatabdi',                         type:'SHATABDI',     from:'New Delhi',       to:'Amritsar Jn',        km:449,  dur:5.5,  fareCC:1080, fareExec:2100, fare3AC:null, dep:'07:20', freq:'Daily',  zone:'NR',  color:'#E3000B' },
+  { no:'12025', name:'Pune Shatabdi',                             type:'SHATABDI',     from:'Mumbai CSMT',     to:'Pune Jn',            km:192,  dur:3.5,  fareCC:800,  fareExec:1500, fare3AC:null, dep:'07:10', freq:'Daily',  zone:'CR',  color:'#E3000B' },
+  { no:'12027', name:'Mumbai-Ahmedabad Shatabdi',                 type:'SHATABDI',     from:'Mumbai Central',  to:'Ahmedabad Jn',       km:492,  dur:6.0,  fareCC:1100, fareExec:2100, fare3AC:null, dep:'06:25', freq:'Daily',  zone:'WR',  color:'#E3000B' },
+  { no:'12213', name:'Mumbai CSMT-Delhi Duronto',                 type:'DURONTO',      from:'Mumbai CSMT',     to:'Hazrat Nizamuddin',  km:1386, dur:16.5, fareCC:null, fareExec:null, fare3AC:2100, dep:'23:25', freq:'Daily',  zone:'CR',  color:'#9932CC' },
+  { no:'12219', name:'Mumbai LTT-Secunderabad Duronto',           type:'DURONTO',      from:'Mumbai LTT',      to:'Secunderabad Jn',    km:794,  dur:13.0, fareCC:null, fareExec:null, fare3AC:1900, dep:'21:05', freq:'4/week', zone:'CR',  color:'#9932CC' },
+  { no:'12259', name:'Sealdah-New Delhi Duronto',                 type:'DURONTO',      from:'Sealdah',         to:'New Delhi',          km:1453, dur:17.5, fareCC:null, fareExec:null, fare3AC:2300, dep:'20:05', freq:'Daily',  zone:'ER',  color:'#9932CC' },
+  { no:'82501', name:'Mumbai-Ahmedabad Tejas Express',            type:'TEJAS',        from:'Mumbai Central',  to:'Ahmedabad Jn',       km:492,  dur:5.5,  fareCC:1500, fareExec:2700, fare3AC:null, dep:'06:40', freq:'6/week', zone:'WR',  color:'#F7941D' },
+  { no:'82901', name:'Lucknow-Delhi Tejas Express',               type:'TEJAS',        from:'Lucknow Charbagh',to:'New Delhi',          km:554,  dur:6.0,  fareCC:1350, fareExec:2500, fare3AC:null, dep:'06:10', freq:'6/week', zone:'NR',  color:'#F7941D' },
+  { no:'11301', name:'Udyan Express - Mumbai to Bengaluru',       type:'SUPERFAST',    from:'Mumbai CSMT',     to:'Bengaluru Jn',       km:1279, dur:24.5, fareCC:null, fareExec:null, fare3AC:1600, dep:'08:05', freq:'Daily',  zone:'CR',  color:'#666699' },
+  { no:'12627', name:'Karnataka Express',                         type:'SUPERFAST',    from:'New Delhi',       to:'Bengaluru Jn',       km:2444, dur:40.0, fareCC:null, fareExec:null, fare3AC:1800, dep:'22:30', freq:'Daily',  zone:'NR',  color:'#666699' },
+  { no:'12621', name:'Tamil Nadu Express',                        type:'SUPERFAST',    from:'New Delhi',       to:'Chennai Central',    km:2182, dur:33.0, fareCC:null, fareExec:null, fare3AC:1800, dep:'22:30', freq:'Daily',  zone:'NR',  color:'#666699' },
+  { no:'12123', name:'Deccan Queen - Pune to Mumbai',             type:'SUPERFAST',    from:'Pune Jn',         to:'Mumbai CSMT',        km:192,  dur:3.5,  fareCC:275,  fareExec:525,  fare3AC:null, dep:'07:15', freq:'Daily',  zone:'CR',  color:'#666699' },
+  { no:'12615', name:'Grand Trunk Express',                       type:'SUPERFAST',    from:'Chennai Central', to:'New Delhi',          km:2182, dur:33.0, fareCC:null, fareExec:null, fare3AC:1700, dep:'19:15', freq:'Daily',  zone:'SR',  color:'#666699' },
+  { no:'12244', name:'Coromandel Express',                        type:'SUPERFAST',    from:'Howrah',          to:'Chennai Central',    km:1663, dur:26.0, fareCC:null, fareExec:null, fare3AC:1650, dep:'08:45', freq:'Daily',  zone:'SER', color:'#666699' },
+  { no:'12839', name:'Howrah-Chennai Mail',                       type:'MAIL',         from:'Howrah',          to:'Chennai Central',    km:1663, dur:26.5, fareCC:null, fareExec:null, fare3AC:1600, dep:'23:50', freq:'Daily',  zone:'SER', color:'#888888' },
+  { no:'12802', name:'Purushottam Express - Puri to Delhi',       type:'SUPERFAST',    from:'Puri',            to:'New Delhi',          km:1796, dur:27.0, fareCC:null, fareExec:null, fare3AC:1600, dep:'22:20', freq:'Daily',  zone:'ECoR',color:'#666699' },
+  { no:'12051', name:'Dadar-Madgaon Jan Shatabdi',                type:'JAN_SHATABDI', from:'Dadar',           to:'Madgaon',            km:582,  dur:9.0,  fareCC:760,  fareExec:null, fare3AC:null, dep:'05:20', freq:'Daily',  zone:'CR',  color:'#009900' },
+  { no:'12909', name:'Mumbai-HNizamuddin Garib Rath',             type:'GARIB_RATH',   from:'Mumbai Bandra',   to:'Hazrat Nizamuddin',  km:1390, dur:19.0, fareCC:null, fareExec:null, fare3AC:1050, dep:'21:25', freq:'3/week', zone:'WR',  color:'#006600' },
+];
+
+// Helper to detect city based on locations
+function detectCity(fromStr, toStr) {
+  const cities = ["Mumbai", "Pune", "Pimpri Chinchwad", "Delhi", "Bengaluru", "Kolkata", "Chennai", "Hyderabad", "Ahmedabad", "Nagpur", "Nashik"];
+  for (const c of cities) {
+    if (fromStr.toLowerCase().includes(c.toLowerCase()) || toStr.toLowerCase().includes(c.toLowerCase())) {
+      return c;
+    }
+  }
+  return "Inter-city";
+}
+
+// Append all India Bus routes to MAHARASHTRA_ROUTES_STATIC to ensure they show up in Bus & Train Times tab
+INDIA_BUS.forEach(b => {
+  const exists = MAHARASHTRA_ROUTES_STATIC.some(r => r.routeId === b.id);
+  if (!exists) {
+    MAHARASHTRA_ROUTES_STATIC.push({
+      routeId: b.id,
+      operator: b.op,
+      city: detectCity(b.from, b.to),
+      type: b.id.startsWith('MSRTC') ? 'INTER_CITY_BUS' : 'BUS',
+      shortName: b.cls,
+      longName: `${b.from} → ${b.to}`,
+      frequencyMinutes: b.freq.includes('min') ? parseInt(b.freq) : 60,
+      fareINR: b.fare,
+      crowdLevel: ['LOW', 'MEDIUM', 'HIGH'][Math.floor(Math.random() * 3)],
+      color: b.color || '#CC0000'
+    });
+  }
+});
+
+// Append all India Train routes to MAHARASHTRA_ROUTES_STATIC to ensure they show up in Bus & Train Times tab
+INDIA_TRAIN.forEach(t => {
+  const exists = MAHARASHTRA_ROUTES_STATIC.some(r => r.routeId === t.no);
+  if (!exists) {
+    MAHARASHTRA_ROUTES_STATIC.push({
+      routeId: t.no,
+      operator: 'Indian Railways',
+      city: detectCity(t.from, t.to),
+      type: 'TRAIN',
+      shortName: t.type === 'VANDE_BHARAT' ? 'Vande Bharat' : t.type === 'RAJDHANI' ? 'Rajdhani' : t.type === 'SHATABDI' ? 'Shatabdi' : 'Train',
+      longName: `${t.name}: ${t.from} → ${t.to}`,
+      frequencyMinutes: 120,
+      fareINR: t.fareCC || t.fare3AC || 100,
+      crowdLevel: ['LOW', 'MEDIUM', 'HIGH'][Math.floor(Math.random() * 3)],
+      color: t.color || '#003580'
+    });
+  }
+});
+
+// ── Transport Browser State ──
+let activeMode = 'metro';
+const TRAIN_TYPE_LABEL = {
+  VANDE_BHARAT:'Vande Bharat', RAJDHANI:'Rajdhani', SHATABDI:'Shatabdi',
+  DURONTO:'Duronto', TEJAS:'Tejas', GARIB_RATH:'Garib Rath',
+  SUPERFAST:'Superfast', MAIL:'Mail Express', JAN_SHATABDI:'Jan Shatabdi'
+};
+
+function updateStateFilter() {
+  const sel = document.getElementById('stateFilter');
+  let opts = '<option value="all">All</option>';
+  if (activeMode === 'metro') {
+    const vals = [...new Set(INDIA_METRO.map(r => r.state))].sort();
+    opts = '<option value="all">All States</option>' + vals.map(v => `<option value="${v}">${v}</option>`).join('');
+  } else if (activeMode === 'bus') {
+    const vals = [...new Set(INDIA_BUS.map(r => r.state))].sort();
+    opts = '<option value="all">All States</option>' + vals.map(v => `<option value="${v}">${v}</option>`).join('');
+  } else if (activeMode === 'train') {
+    const zones = [...new Set(INDIA_TRAIN.map(r => r.zone))].sort();
+    opts = '<option value="all">All Zones</option>' + zones.map(v => `<option value="${v}">Zone ${v}</option>`).join('');
+  }
+  sel.innerHTML = opts;
+}
+
+function renderTransportBrowser() {
+  const grid  = document.getElementById('routesGrid');
+  const label = document.getElementById('routesSectionLabel');
+  const q  = document.getElementById('routeSearch').value.toLowerCase().trim();
+  const sv = document.getElementById('stateFilter').value;
+
+  if (activeMode === 'metro') {
+    let items = INDIA_METRO;
+    if (sv !== 'all') items = items.filter(r => r.state === sv);
+    if (q)            items = items.filter(r => [r.network,r.lineName,r.city,r.state,r.from,r.to,r.operator].join(' ').toLowerCase().includes(q));
+    label.textContent = `Metro networks — India (${items.length} lines shown)`;
+    grid.innerHTML = items.length ? items.map(r => `
+      <div class="route-card" style="border-left-color:${r.color};">
+        <div class="route-card-head">
+          <div>
+            <div class="route-card-name">${r.lineName}</div>
+            <div class="route-card-sub">${r.network} · ${r.operator}</div>
+          </div>
+          <span style="background:${r.color}22;border:1px solid ${r.color}55;color:${r.color};font-family:var(--font-mono);font-size:9px;padding:3px 7px;border-radius:5px;">${r.city}</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px;">${r.from} → ${r.to}</div>
+        <div class="route-card-meta">
+          <span class="tag ontime">${r.stations} stops · ${r.km}km</span>
+          <span class="tag type-metro">Every ${r.freq}m</span>
+          <span class="tag type-metro">₹${r.fareMin}–${r.fareMax}</span>
+          <span class="route-city">${r.state}</span>
+          <span class="tag ontime">Est. ${r.openYear}</span>
+        </div>
+      </div>`).join('') : '<div class="card empty-note">No metro lines found.</div>';
+
+  } else if (activeMode === 'bus') {
+    let items = INDIA_BUS;
+    if (sv !== 'all') items = items.filter(r => r.state === sv);
+    if (q)            items = items.filter(r => [r.op,r.state,r.cls,r.from,r.to].join(' ').toLowerCase().includes(q));
+    label.textContent = `State buses — India (${items.length} routes shown)`;
+    grid.innerHTML = items.length ? items.map(r => `
+      <div class="route-card" style="border-left-color:${r.color};">
+        <div class="route-card-head">
+          <div>
+            <div class="route-card-name">${r.from} → ${r.to}</div>
+            <div class="route-card-sub">${r.op} · ${r.cls}</div>
+          </div>
+          <span class="route-city">${r.state}</span>
+        </div>
+        <div class="route-card-meta">
+          <span class="tag ontime">${r.km} km</span>
+          <span class="tag type-metro">~${r.dur}hr</span>
+          <span class="tag type-metro">₹${r.fare}</span>
+          <span class="tag delay">${r.freq}</span>
+        </div>
+      </div>`).join('') : '<div class="card empty-note">No bus routes found.</div>';
+
+  } else if (activeMode === 'train') {
+    let items = INDIA_TRAIN;
+    if (sv !== 'all') items = items.filter(r => r.zone === sv);
+    if (q)            items = items.filter(r => [r.name,r.from,r.to,r.type,r.zone,r.no].join(' ').toLowerCase().includes(q));
+    label.textContent = `Indian Railways premium services (${items.length} trains shown)`;
+    grid.innerHTML = items.length ? items.map(r => {
+      const typeLabel = TRAIN_TYPE_LABEL[r.type] || r.type;
+      const fareStr = r.fareCC ? `CC ₹${r.fareCC}` : r.fare3AC ? `3AC ₹${r.fare3AC}` : '';
+      const tagCls  = r.type === 'VANDE_BHARAT' ? 'type-metro' : r.type === 'RAJDHANI' ? 'type-train' : 'ontime';
+      return `
+      <div class="route-card" style="border-left-color:${r.color};">
+        <div class="route-card-head">
+          <div>
+            <div class="route-card-name" style="font-size:13px;">${r.name}</div>
+            <div class="route-card-sub">#${r.no} · Zone ${r.zone}</div>
+          </div>
+          <span class="tag ${tagCls}" style="white-space:nowrap;">${typeLabel}</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--text-muted);margin-bottom:10px;">${r.from} → ${r.to}</div>
+        <div class="route-card-meta">
+          <span class="tag ontime">${r.km} km</span>
+          <span class="tag type-metro">${r.dur}hr</span>
+          <span class="tag type-metro">${fareStr}</span>
+          <span class="tag delay">Dep ${r.dep}</span>
+          <span class="route-city">${r.freq}</span>
+        </div>
+      </div>`;
+    }).join('') : '<div class="card empty-note">No trains found.</div>';
+
+  } else if (activeMode === 'flight') {
+    let items = INDIA_FLIGHT;
+    if (sv !== 'all') items = items.filter(r => r.airline === sv);
+    if (q)            items = items.filter(r => [r.no,r.airline,r.from,r.fromCity,r.to,r.toCity].join(' ').toLowerCase().includes(q));
+    label.textContent = `Domestic flights — India (${items.length} routes shown)`;
+    grid.innerHTML = items.length ? items.map(r => `
+      <div class="route-card" style="border-left-color:${r.color};">
+        <div class="route-card-head">
+          <div>
+            <div class="route-card-name">${r.fromCity} (${r.from}) → ${r.toCity} (${r.to})</div>
+            <div class="route-card-sub">${r.airline} · Flight ${r.no}</div>
+          </div>
+          <span class="tag type-metro" style="white-space:nowrap;">✈ ${r.dur} min</span>
+        </div>
+        <div class="route-card-meta">
+          <span class="tag ontime">Eco ₹${r.fareEco.toLocaleString('en-IN')}</span>
+          ${r.fareBus ? `<span class="tag type-train">Biz ₹${r.fareBus.toLocaleString('en-IN')}</span>` : ''}
+          <span class="tag delay">${r.freq}</span>
+        </div>
+      </div>`).join('') : '<div class="card empty-note">No flights found.</div>';
+  }
+}
+
+// Mode tab clicks
+document.getElementById('modeTabBar').addEventListener('click', e => {
+  const pill = e.target.closest('[data-mode]');
+  if (!pill) return;
+  document.querySelectorAll('#modeTabBar .filter-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+  activeMode = pill.dataset.mode;
+  document.getElementById('routeSearch').value = '';
+  updateStateFilter();
+  renderTransportBrowser();
+});
+document.getElementById('routeSearch').addEventListener('input', renderTransportBrowser);
+document.getElementById('stateFilter').addEventListener('change', renderTransportBrowser);
+
+// ── Journey Planner ──
+// Helper: resolve a text-input value to a lat,lon coordinate string.
+// Priority: 1) matching entry in INDIA_PLACES by current text, 2) stored data-latlng (only if text unchanged), 3) fallback raw value
+function resolveInputCoords(inputEl) {
+  const text = (inputEl.value || '').trim();
+  const latlng = (inputEl.getAttribute('data-latlng') || '').trim();
+  // Only trust the cached latlng if the user hasn't typed a new location name
+  // (i.e. the attribute stores coordinates, not a city name that may be stale)
+  const cachedText = (inputEl.getAttribute('data-resolved-for') || '').trim();
+  if (latlng && /^-?\d+\.\d+,-?\d+\.\d+$/.test(latlng) && cachedText.toLowerCase() === text.toLowerCase()) {
+    return latlng;
+  }
+  const textLower = text.toLowerCase();
+  // Try to look up by name in the local places DB
+  if (typeof INDIA_PLACES !== 'undefined') {
+    const match = INDIA_PLACES.find(p => p.name.toLowerCase() === textLower ||
+                                        (p.aliases && p.aliases.some(a => a.toLowerCase() === textLower)));
+    if (match) {
+      inputEl.setAttribute('data-latlng', match.coords);
+      inputEl.setAttribute('data-resolved-for', text);
+      return match.coords;
+    }
+    // Partial match as last resort (min 3 chars)
+    if (textLower.length >= 3) {
+      const partial = INDIA_PLACES.find(p => p.name.toLowerCase().includes(textLower) ||
+                                            (p.aliases && p.aliases.some(a => a.toLowerCase().includes(textLower))));
+      if (partial) {
+        inputEl.setAttribute('data-latlng', partial.coords);
+        inputEl.setAttribute('data-resolved-for', text);
+        return partial.coords;
+      }
+    }
+  }
+  // Fallback: send the raw text to the backend (it has its own resolution)
+  return text.replace(/\s+/g, ' ').trim() || '18.6487,73.7762';
+}
+
+document.getElementById('planBtn').addEventListener('click', async () => {
+  const originEl = document.getElementById('originInput');
+  const destEl   = document.getElementById('destInput');
+  let origin = resolveInputCoords(originEl);
+  let dest   = resolveInputCoords(destEl);
+  const container = document.getElementById('multimodalOptionsList');
+
+  container.innerHTML = `<div class="card" style="text-align:center; padding:20px; color:var(--text-muted);">Calculating routes...</div>`;
+  try {
+    const res = await fetch(`/api/v1/route/multimodal?origin=${origin}&destination=${dest}`);
+    const json = await res.json();
+    if (json.success && json.data) {
+      const it = json.data;
+      const legsHtml = it.legs.map(l => {
+        const icon = l.mode==='TRANSIT'?'🚌':l.mode==='SCOOTER'?'🛴':'🚶';
+        return `<div class="leg">${icon} <b>${Math.round(l.durationSeconds/60)}m</b> · ${l.instruction}</div>`;
+      }).join('<span class="arrow">→</span>');
+
+      container.innerHTML = `
+        <div class="option-card">
+          <div class="option-head">
+            <span class="option-time">${it.summary.totalDurationMinutes} min</span>
+            <span class="option-sub">FASTEST MULTIMODAL</span>
+          </div>
+          <div class="legs">${legsHtml}</div>
+          <div class="offline-pill">Weather-adjusted • ${it.summary.totalDistanceMeters >= 1000 ? (it.summary.totalDistanceMeters/1000).toFixed(1)+'km' : it.summary.totalDistanceMeters+'m'}</div>
+        </div>`;
+      
+      // Draw the calculated route on the interactive Google Map
+      drawRouteOnMap(it.legs);
+    } else {
+      container.innerHTML = `<div class="card" style="text-align:center; color:var(--high);">Could not compute route. Check coordinates.</div>`;
+    }
+  } catch (e) {
+    container.innerHTML = `<div class="card" style="text-align:center; color:var(--high);">Offline mode — route planner unavailable.</div>`;
+  }
+});
+
+// ── Alerts ──
+async function loadAlerts() {
+  const list = document.getElementById('alertsList');
+  try {
+    const res = await fetch('/api/v1/alerts');
+    const json = await res.json();
+    if (json.success && json.data && json.data.length > 0) {
+      const count = json.data.length;
+      document.getElementById('alertNavBadge').textContent = count;
+      document.getElementById('alertTabBadge').textContent = count;
+      document.getElementById('alertsCountLabel').textContent = `Active system alerts · ${count}`;
+      list.innerHTML = json.data.map(a => `
+        <div class="alert">
+          <div class="alert-icon ${a.severity==='high'?'high':'med'}">${a.severity==='high'?'🚨':'⚠️'}</div>
+          <div class="alert-body">
+            <div class="alert-title">${a.titleText||'Disruption'}</div>
+            <div class="alert-desc">${a.descriptionText}</div>
+            <div class="alert-time">Live</div>
+          </div>
+        </div>`).join('');
+    } else {
+      document.getElementById('alertNavBadge').textContent = '0';
+      document.getElementById('alertTabBadge').textContent = '0';
+      list.innerHTML = `<div class="empty-note">No active alerts. Network running normally.</div>`;
+    }
+  } catch (e) {
+    list.innerHTML = `<div class="empty-note">Cannot reach alerts endpoint.</div>`;
+  }
+}
+
+document.getElementById('submitReportBtn').addEventListener('click', async () => {
+  const input  = document.getElementById('reportInput');
+  const status = document.getElementById('reportStatus');
+  const text   = input.value.trim();
+  if (!text) { status.className='report-status-msg err'; status.textContent='Please enter report details.'; return; }
+  status.className='report-status-msg'; status.textContent='Verifying...'; status.style.display='block';
+  try {
+    const res = await fetch('/api/v1/crowdsource/report', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ userId:'commuter_mh_01', text, lat:19.1136, lon:72.8696 })
+    });
+    const json = await res.json();
+    if (json.isVerified) {
+      status.className='report-status-msg ok';
+      status.textContent=`Verified! ${json.verificationMessage}`;
+      input.value=''; loadAlerts();
+    } else {
+      status.className='report-status-msg err';
+      status.textContent=`Rejected: ${json.verificationMessage}`;
+    }
+  } catch (e) {
+    status.className='report-status-msg ok';
+    status.textContent='Simulation mode: Alert cached locally.';
+    input.value='';
+  }
+});
+
+// ── Refresh buttons ──
+function refreshAll() {
+  loadAlerts();
+  loadLiveDepartures();
+}
+document.getElementById('refreshBtn').addEventListener('click', refreshAll);
+document.getElementById('refreshBtnDesktop').addEventListener('click', refreshAll);
+
+// ── Boot ──
+loadLiveDepartures();
+updateStateFilter();
+renderTransportBrowser();
+loadAlerts();
+setInterval(tickETAs, 1000);
+setInterval(loadLiveDepartures, 10000);
+setInterval(loadAlerts, 30000);
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// MULTI-LANGUAGE TRANSLATION SYSTEM
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+const LANGS = {
+  en: {
+    name: 'English', short: 'EN', flag: '🌐',
+    nav_menu: 'Menu',
+    nav_home: '🚌 Bus & Train Times',
+    nav_routes: '🗺️ Find Routes',
+    nav_planner: '🧭 Plan My Trip',
+    nav_alerts: '⚠️ Problems & Help',
+    nav_home_short: '🏠 Home',
+    nav_routes_short: '🗺️ Routes',
+    nav_planner_short: '🧭 Plan',
+    nav_alerts_short: '⚠️ Alerts',
+    eyebrow: "India's Transport Guide",
+    status_live: '✅ System is Live',
+    filter_city: '🏙️ Choose your city',
+    city_all: 'All India',
+    city_intercity: 'Inter-city',
+    section_leaving: '🟢 Buses & Trains Leaving Soon',
+    loading_board: 'Loading...',
+    crowd_why: '💡 How do we know how crowded it is?',
+    crowd_explain: 'We combine reports from other passengers like you with historical patterns for each route. This updates every 30 seconds.',
+    welcome_title: 'How to use this app',
+    welcome_steps: '1️⃣ Choose your city below → 2️⃣ See the next buses & trains → 3️⃣ Tap "Plan My Trip" to find the best route',
+    search_placeholder: '🔍 Search city, bus, or train...',
+    filter_all_states: 'All States / Networks',
+    metro_label: 'Metro lines across India',
+    loading_routes: 'Loading routes...',
+    planner_title: '🧭 Where do you want to go?',
+    planner_from: '📍 Starting point (e.g. Andheri Station)',
+    planner_to: '🏁 Destination (e.g. Dadar Station)',
+    planner_btn: '🔍 Show Me Routes',
+    planner_options: '🚌 Your Route Options',
+    planner_hint: 'Enter your start and destination above, then tap Show Me Routes.',
+    popular_routes: '⭐ Common Trips',
+    offline_title: '📵 Works Without Internet Too',
+    offline_desc: 'Bus & train timetables are saved on your phone. If you lose network, you can still see schedules.',
+    offline_pill: 'Offline-ready',
+    alerts_current: '⚠️ Current Problems',
+    alerts_checking: 'Checking for problems...',
+    report_title: '📢 Something Wrong? Tell Us!',
+    report_placeholder: 'e.g. Bus 335A is very late near Andheri Station...',
+    report_btn: '📢 Send My Report',
+    alert_prefs: '🔔 Get Notified When...',
+    pref1_title: 'Bus/Train is very late (5+ min)',
+    pref1_sub: 'On routes you have saved',
+    pref2_title: 'Bus is very crowded',
+    pref2_sub: '15 min before your usual departure',
+    pref3_title: 'Route is changed or diverted',
+    pref3_sub: 'All routes near your saved stops',
+    lang_choose: 'Choose Language',
+    every_min: 'Every',
+    min_label: 'min',
+    stops: 'stops',
+    fare: 'Fare',
+    km: 'km',
+    dep: 'Leaves at',
+    eco_class: 'Economy',
+    biz_class: 'Business',
+  },
+  hi: {
+    name: 'हिन्दी', short: 'HI', flag: '🌐',
+    nav_menu: 'मेनू',
+    nav_home: '🚌 बस और ट्रेन का समय',
+    nav_routes: '🗺️ रूट खोजें',
+    nav_planner: '🧭 यात्रा योजना',
+    nav_alerts: '⚠️ समस्याएं और मदद',
+    nav_home_short: '🏠 होम',
+    nav_routes_short: '🗺️ रूट',
+    nav_planner_short: '🧭 योजना',
+    nav_alerts_short: '⚠️ अलर्ट',
+    eyebrow: 'भारत का परिवहन गाइड',
+    status_live: '✅ सिस्टम चालू है',
+    filter_city: '🏙️ अपना शहर चुनें',
+    city_all: 'पूरा भारत',
+    city_intercity: 'अंतर-शहर',
+    section_leaving: '🟢 जल्द ही जाने वाली बस और ट्रेन',
+    loading_board: 'लोड हो रहा है...',
+    crowd_why: '💡 हम भीड़ कैसे जानते हैं?',
+    crowd_explain: 'हम आप जैसे यात्रियों की रिपोर्ट और पुराने डेटा को मिलाते हैं। यह हर 30 सेकंड में अपडेट होता है।',
+    welcome_title: 'इस ऐप को कैसे उपयोग करें',
+    welcome_steps: '1️⃣ नीचे अपना शहर चुनें → 2️⃣ अगली बस और ट्रेन देखें → 3️⃣ "यात्रा योजना" पर जाएं',
+    search_placeholder: '🔍 शहर, बस या ट्रेन खोजें...',
+    filter_all_states: 'सभी राज्य / नेटवर्क',
+    metro_label: 'भारत में मेट्रो लाइनें',
+    loading_routes: 'रूट लोड हो रहे हैं...',
+    planner_title: '🧭 आप कहाँ जाना चाहते हैं?',
+    planner_from: '📍 शुरुआत (जैसे अंधेरी स्टेशन)',
+    planner_to: '🏁 मंजिल (जैसे दादर स्टेशन)',
+    planner_btn: '🔍 रूट दिखाएं',
+    planner_options: '🚌 आपके रूट विकल्प',
+    planner_hint: 'ऊपर शुरुआत और मंजिल भरें, फिर रूट दिखाएं पर टैप करें।',
+    popular_routes: '⭐ लोकप्रिय यात्राएं',
+    offline_title: '📵 इंटरनेट के बिना भी काम करता है',
+    offline_desc: 'बस और ट्रेन का शेड्यूल आपके फोन में सेव है। नेटवर्क न हो तो भी देख सकते हैं।',
+    offline_pill: 'ऑफलाइन उपलब्ध',
+    alerts_current: '⚠️ मौजूदा समस्याएं',
+    alerts_checking: 'समस्याएं जांची जा रही हैं...',
+    report_title: '📢 कुछ गलत है? हमें बताएं!',
+    report_placeholder: 'जैसे: बस 335A अंधेरी के पास बहुत देर से है...',
+    report_btn: '📢 रिपोर्ट भेजें',
+    alert_prefs: '🔔 सूचना कब पाएं...',
+    pref1_title: 'बस/ट्रेन बहुत देर से आए (5+ मिनट)',
+    pref1_sub: 'आपके सेव किए रूट पर',
+    pref2_title: 'बस बहुत भीड़ हो',
+    pref2_sub: 'आपके जाने से 15 मिनट पहले',
+    pref3_title: 'रूट बदल गया हो',
+    pref3_sub: 'आपके पास के सभी रूट',
+    lang_choose: 'भाषा चुनें',
+    every_min: 'हर', min_label: 'मिनट', stops: 'स्टॉप', fare: 'किराया', km: 'किमी', dep: 'प्रस्थान', eco_class: 'सामान्य', biz_class: 'व्यापार',
+  },
+  mr: {
+    name: 'मराठी', short: 'MR', flag: '🌐',
+    nav_menu: 'मेनू',
+    nav_home: '🚌 बस आणि रेल्वेचे वेळापत्रक',
+    nav_routes: '🗺️ मार्ग शोधा',
+    nav_planner: '🧭 प्रवास आखणी',
+    nav_alerts: '⚠️ समस्या आणि मदत',
+    nav_home_short: '🏠 मुख्यपृष्ठ',
+    nav_routes_short: '🗺️ मार्ग',
+    nav_planner_short: '🧭 आखणी',
+    nav_alerts_short: '⚠️ सूचना',
+    eyebrow: 'भारताचे वाहतूक मार्गदर्शक',
+    status_live: '✅ सिस्टम सुरू आहे',
+    filter_city: '🏙️ तुमचे शहर निवडा',
+    city_all: 'संपूर्ण भारत',
+    city_intercity: 'आंतरशहर',
+    section_leaving: '🟢 लवकरच निघणाऱ्या बस आणि ट्रेन',
+    loading_board: 'लोड होत आहे...',
+    crowd_why: '💡 आम्हाला गर्दी कशी समजते?',
+    crowd_explain: 'आपल्यासारख्या इतर प्रवाशांच्या अहवाल आणि जुन्या माहितीवरून आम्ही अंदाज करतो. हे दर ३० सेकंदांनी अपडेट होते.',
+    welcome_title: 'हे ॲप कसे वापरावे',
+    welcome_steps: '1️⃣ खाली आपले शहर निवडा → 2️⃣ पुढील बस आणि ट्रेन पहा → 3️⃣ "प्रवास आखणी" वर जा',
+    search_placeholder: '🔍 शहर, बस किंवा ट्रेन शोधा...',
+    filter_all_states: 'सर्व राज्ये / नेटवर्क',
+    metro_label: 'भारतातील मेट्रो मार्ग',
+    loading_routes: 'मार्ग लोड होत आहेत...',
+    planner_title: '🧭 तुम्हाला कुठे जायचे आहे?',
+    planner_from: '📍 सुरुवात (उदा. अंधेरी स्थानक)',
+    planner_to: '🏁 गंतव्य (उदा. दादर स्थानक)',
+    planner_btn: '🔍 मार्ग दाखवा',
+    planner_options: '🚌 तुमचे मार्ग पर्याय',
+    planner_hint: 'वर सुरुवात आणि गंतव्य भरा, मग मार्ग दाखवा वर टॅप करा.',
+    popular_routes: '⭐ लोकप्रिय प्रवास',
+    offline_title: '📵 इंटरनेटशिवायही काम करते',
+    offline_desc: 'बस आणि ट्रेनचे वेळापत्रक तुमच्या फोनमध्ये साठवले आहे. नेटवर्क नसले तरी पाहता येते.',
+    offline_pill: 'ऑफलाइन उपलब्ध',
+    alerts_current: '⚠️ सद्यस्थितीतील समस्या',
+    alerts_checking: 'समस्या तपासल्या जात आहेत...',
+    report_title: '📢 काही चुकीचे आहे? आम्हाला सांगा!',
+    report_placeholder: 'उदा. बस ३३५A अंधेरीजवळ खूप उशिरा आहे...',
+    report_btn: '📢 अहवाल पाठवा',
+    alert_prefs: '🔔 सूचना कधी मिळवायची...',
+    pref1_title: 'बस/ट्रेन खूप उशिरा (5+ मिनिटे)',
+    pref1_sub: 'तुमच्या सेव्ह केलेल्या मार्गांवर',
+    pref2_title: 'बस खूप गर्दी',
+    pref2_sub: 'तुमच्या नेहमीच्या प्रस्थानापूर्वी 15 मिनिटे',
+    pref3_title: 'मार्ग बदलला',
+    pref3_sub: 'तुमच्या जवळच्या सर्व मार्ग',
+    lang_choose: 'भाषा निवडा',
+    every_min: 'दर', min_label: 'मिनिट', stops: 'थांबे', fare: 'तिकीट', km: 'किमी', dep: 'प्रस्थान', eco_class: 'सामान्य', biz_class: 'व्यवसाय',
+  },
+  ta: {
+    name: 'தமிழ்', short: 'TA', flag: '🌐',
+    nav_menu: 'மெனு',
+    nav_home: '🚌 பேருந்து & ரயில் நேரம்',
+    nav_routes: '🗺️ வழிகளைக் கண்டுபிடி',
+    nav_planner: '🧭 பயண திட்டம்',
+    nav_alerts: '⚠️ பிரச்சினைகள் & உதவி',
+    nav_home_short: '🏠 முகப்பு',
+    nav_routes_short: '🗺️ வழிகள்',
+    nav_planner_short: '🧭 திட்டம்',
+    nav_alerts_short: '⚠️ எச்சரிக்கை',
+    eyebrow: 'இந்தியாவின் போக்குவரத்து வழிகாட்டி',
+    status_live: '✅ சிஸ்டம் இயங்குகிறது',
+    filter_city: '🏙️ உங்கள் நகரத்தை தேர்ந்தெடுங்கள்',
+    city_all: 'அனைத்து இந்தியா',
+    city_intercity: 'நகரங்களுக்கு இடையே',
+    section_leaving: '🟢 விரைவில் புறப்படும் பேருந்துகள் & ரயில்கள்',
+    loading_board: 'ஏற்றுகிறது...',
+    crowd_why: '💡 நெரிசலை எப்படி அறிவோம்?',
+    crowd_explain: 'உங்களைப் போன்ற பயணிகளின் அறிக்கைகளையும் வரலாற்று தரவையும் இணைக்கிறோம். இது 30 வினாடிகளில் புதுப்பிக்கப்படும்.',
+    welcome_title: 'இந்த பயன்பாட்டை எவ்வாறு பயன்படுத்துவது',
+    welcome_steps: '1️⃣ உங்கள் நகரத்தை தேர்ந்தெடுங்கள் → 2️⃣ அடுத்த பேருந்துகள் & ரயில்களை பாருங்கள் → 3️⃣ "பயண திட்டம்" -ஐ தட்டுங்கள்',
+    search_placeholder: '🔍 நகரம், பேருந்து அல்லது ரயிலை தேடுங்கள்...',
+    filter_all_states: 'அனைத்து மாநிலங்கள் / நெட்வொர்க்குகள்',
+    metro_label: 'இந்தியா முழுவதும் மெட்ரோ இணைப்புகள்',
+    loading_routes: 'வழிகள் ஏற்றப்படுகின்றன...',
+    planner_title: '🧭 நீங்கள் எங்கே போக விரும்புகிறீர்கள்?',
+    planner_from: '📍 தொடக்க இடம் (எ.கா. அந்தேரி நிலையம்)',
+    planner_to: '🏁 இலக்கு (எ.கா. தாதர் நிலையம்)',
+    planner_btn: '🔍 வழிகளை காட்டு',
+    planner_options: '🚌 உங்கள் பயண வழிகள்',
+    planner_hint: 'மேலே தொடக்கம் மற்றும் இலக்கை உள்ளிடுங்கள், பின்னர் வழிகளை காட்டு என்பதை தட்டுங்கள்.',
+    popular_routes: '⭐ பொதுவான பயணங்கள்',
+    offline_title: '📵 இணையம் இல்லாமலும் வேலை செய்யும்',
+    offline_desc: 'பேருந்து & ரயில் அட்டவணைகள் உங்கள் தொலைபேசியில் சேமிக்கப்படுகின்றன.',
+    offline_pill: 'ஆஃப்லைனில் கிடைக்கும்',
+    alerts_current: '⚠️ தற்போதைய பிரச்சினைகள்',
+    alerts_checking: 'பிரச்சினைகளை சரிபார்க்கிறோம்...',
+    report_title: '📢 ஏதாவது தவறா? எங்களுக்கு சொல்லுங்கள்!',
+    report_placeholder: 'எ.கா. பேருந்து 335A அந்தேரி அருகே மிகவும் தாமதமாக உள்ளது...',
+    report_btn: '📢 அறிக்கையை அனுப்பு',
+    alert_prefs: '🔔 எப்போது அறிவிப்பு வேண்டும்...',
+    pref1_title: 'பேருந்து/ரயில் மிகவும் தாமதம் (5+ நிமிடம்)',
+    pref1_sub: 'நீங்கள் சேமித்த வழிகளில்',
+    pref2_title: 'பேருந்தில் மிகவும் நெரிசல்',
+    pref2_sub: 'உங்கள் வழக்கமான புறப்பாட்டிற்கு 15 நிமிடங்கள் முன்',
+    pref3_title: 'வழி மாற்றப்பட்டது',
+    pref3_sub: 'உங்கள் அருகிலுள்ள அனைத்து வழிகளும்',
+    lang_choose: 'மொழியை தேர்ந்தெடுங்கள்',
+    every_min: 'ஒவ்வொரு', min_label: 'நிமிடம்', stops: 'நிறுத்தங்கள்', fare: 'கட்டணம்', km: 'கிமீ', dep: 'புறப்படும் நேரம்', eco_class: 'சாதாரண', biz_class: 'வணிகம்',
+  },
+  te: {
+    name: 'తెలుగు', short: 'TE', flag: '🌐',
+    nav_menu: 'మెనూ',
+    nav_home: '🚌 బస్సు & రైలు సమయాలు',
+    nav_routes: '🗺️ మార్గాలు కనుగొనండి',
+    nav_planner: '🧭 ప్రయాణ ప్రణాళిక',
+    nav_alerts: '⚠️ సమస్యలు & సహాయం',
+    nav_home_short: '🏠 హోమ్',
+    nav_routes_short: '🗺️ మార్గాలు',
+    nav_planner_short: '🧭 ప్లాన్',
+    nav_alerts_short: '⚠️ హెచ్చరికలు',
+    eyebrow: 'భారతదేశపు రవాణా గైడ్',
+    status_live: '✅ సిస్టమ్ పని చేస్తోంది',
+    filter_city: '🏙️ మీ నగరాన్ని ఎంచుకోండి',
+    city_all: 'మొత్తం భారతదేశం',
+    city_intercity: 'నగరాల మధ్య',
+    section_leaving: '🟢 త్వరలో బయలుదేరే బస్సులు & రైళ్ళు',
+    loading_board: 'లోడ్ అవుతోంది...',
+    crowd_why: '💡 రద్దీని ఎలా తెలుసుకుంటాము?',
+    crowd_explain: 'మీలాంటి ప్రయాణికుల నివేదికలు మరియు చారిత్రక డేటాను కలుపుతాం. ఇది 30 సెకన్లకు ఒకసారి అప్డేట్ అవుతుంది.',
+    welcome_title: 'ఈ యాప్‌ని ఎలా ఉపయోగించాలి',
+    welcome_steps: '1️⃣ మీ నగరాన్ని ఎంచుకోండి → 2️⃣ తర్వాతి బస్సులు & రైళ్ళు చూడండి → 3️⃣ "ప్రయాణ ప్రణాళిక"ను నొక్కండి',
+    search_placeholder: '🔍 నగరం, బస్సు లేదా రైలు వెతకండి...',
+    filter_all_states: 'అన్ని రాష్ట్రాలు / నెట్‌వర్క్‌లు',
+    metro_label: 'భారతదేశంలో మెట్రో మార్గాలు',
+    loading_routes: 'మార్గాలు లోడ్ అవుతున్నాయి...',
+    planner_title: '🧭 మీరు ఎక్కడికి వెళ్ళాలనుకుంటున్నారు?',
+    planner_from: '📍 ప్రారంభ స్థలం (ఉదా. అంధేరి స్టేషన్)',
+    planner_to: '🏁 గమ్యం (ఉదా. దాదర్ స్టేషన్)',
+    planner_btn: '🔍 మార్గాలు చూపించు',
+    planner_options: '🚌 మీ మార్గ ఎంపికలు',
+    planner_hint: 'పైన ప్రారంభం మరియు గమ్యాన్ని నమోదు చేయండి, ఆపై మార్గాలు చూపించు నొక్కండి.',
+    popular_routes: '⭐ సాధారణ ప్రయాణాలు',
+    offline_title: '📵 ఇంటర్నెట్ లేకుండా కూడా పని చేస్తుంది',
+    offline_desc: 'బస్సు & రైలు షెడ్యూల్‌లు మీ ఫోన్‌లో సేవ్ చేయబడ్డాయి.',
+    offline_pill: 'ఆఫ్‌లైన్‌లో అందుబాటులో ఉంది',
+    alerts_current: '⚠️ ప్రస్తుత సమస్యలు',
+    alerts_checking: 'సమస్యలు తనిఖీ చేయబడుతున్నాయి...',
+    report_title: '📢 ఏదైనా తప్పుగా ఉందా? మాకు చెప్పండి!',
+    report_placeholder: 'ఉదా. బస్సు 335A అంధేరి దగ్గర చాలా ఆలస్యంగా ఉంది...',
+    report_btn: '📢 నివేదిక పంపండి',
+    alert_prefs: '🔔 ఎప్పుడు నోటిఫికేషన్ కావాలి...',
+    pref1_title: 'బస్సు/రైలు చాలా ఆలస్యం (5+ నిమిషాలు)',
+    pref1_sub: 'మీరు సేవ్ చేసిన మార్గాలలో',
+    pref2_title: 'బస్సులో చాలా రద్దీ',
+    pref2_sub: 'మీ సాధారణ బయలుదేరడానికి 15 నిమిషాల ముందు',
+    pref3_title: 'మార్గం మారింది',
+    pref3_sub: 'మీ దగ్గరలో ఉన్న అన్ని మార్గాలు',
+    lang_choose: 'భాషను ఎంచుకోండి',
+    every_min: 'ప్రతి', min_label: 'నిమిషం', stops: 'స్టాప్‌లు', fare: 'చార్జీ', km: 'కి.మీ', dep: 'బయలుదేరే సమయం', eco_class: 'సాధారణ', biz_class: 'వ్యాపారం',
+  },
+  bn: {
+    name: 'বাংলা', short: 'BN', flag: '🌐',
+    nav_menu: 'মেনু',
+    nav_home: '🚌 বাস ও ট্রেনের সময়',
+    nav_routes: '🗺️ রুট খুঁজুন',
+    nav_planner: '🧭 যাত্রা পরিকল্পনা',
+    nav_alerts: '⚠️ সমস্যা ও সাহায্য',
+    nav_home_short: '🏠 হোম',
+    nav_routes_short: '🗺️ রুট',
+    nav_planner_short: '🧭 পরিকল্পনা',
+    nav_alerts_short: '⚠️ সতর্কতা',
+    eyebrow: 'ভারতের পরিবহন গাইড',
+    status_live: '✅ সিস্টেম চলছে',
+    filter_city: '🏙️ আপনার শহর বেছে নিন',
+    city_all: 'সারা ভারত',
+    city_intercity: 'আন্তঃশহর',
+    section_leaving: '🟢 শীঘ্রই ছাড়বে বাস ও ট্রেন',
+    loading_board: 'লোড হচ্ছে...',
+    crowd_why: '💡 আমরা ভিড় কীভাবে জানি?',
+    crowd_explain: 'আপনার মতো যাত্রীদের রিপোর্ট ও ঐতিহাসিক তথ্য একত্রিত করি। এটি প্রতি ৩০ সেকেন্ডে আপডেট হয়।',
+    welcome_title: 'এই অ্যাপ কীভাবে ব্যবহার করবেন',
+    welcome_steps: '1️⃣ নিচে আপনার শহর বেছে নিন → 2️⃣ পরবর্তী বাস ও ট্রেন দেখুন → 3️⃣ "যাত্রা পরিকল্পনা" তে যান',
+    search_placeholder: '🔍 শহর, বাস বা ট্রেন খুঁজুন...',
+    filter_all_states: 'সব রাজ্য / নেটওয়ার্ক',
+    metro_label: 'ভারতে মেট্রো লাইন',
+    loading_routes: 'রুট লোড হচ্ছে...',
+    planner_title: '🧭 আপনি কোথায় যেতে চান?',
+    planner_from: '📍 শুরুর স্থান (যেমন অন্ধেরি স্টেশন)',
+    planner_to: '🏁 গন্তব্য (যেমন দাদার স্টেশন)',
+    planner_btn: '🔍 রুট দেখান',
+    planner_options: '🚌 আপনার রুটের বিকল্প',
+    planner_hint: 'উপরে শুরু ও গন্তব্য লিখুন, তারপর রুট দেখান তে ট্যাপ করুন।',
+    popular_routes: '⭐ সাধারণ যাত্রা',
+    offline_title: '📵 ইন্টারনেট ছাড়াও কাজ করে',
+    offline_desc: 'বাস ও ট্রেনের সময়সূচি আপনার ফোনে সেভ থাকে।',
+    offline_pill: 'অফলাইনে উপলব্ধ',
+    alerts_current: '⚠️ বর্তমান সমস্যা',
+    alerts_checking: 'সমস্যা যাচাই হচ্ছে...',
+    report_title: '📢 কিছু ভুল আছে? আমাদের বলুন!',
+    report_placeholder: 'যেমন: বাস ৩৩৫A অন্ধেরির কাছে অনেক দেরিতে আছে...',
+    report_btn: '📢 রিপোর্ট পাঠান',
+    alert_prefs: '🔔 কখন বিজ্ঞপ্তি পাবেন...',
+    pref1_title: 'বাস/ট্রেন অনেক দেরি (৫+ মিনিট)',
+    pref1_sub: 'আপনার সেভ করা রুটে',
+    pref2_title: 'বাসে অনেক ভিড়',
+    pref2_sub: 'আপনার স্বাভাবিক যাত্রার ১৫ মিনিট আগে',
+    pref3_title: 'রুট পরিবর্তন হয়েছে',
+    pref3_sub: 'আপনার কাছের সব রুট',
+    lang_choose: 'ভাষা বেছে নিন',
+    every_min: 'প্রতি', min_label: 'মিনিট', stops: 'স্টপ', fare: 'ভাড়া', km: 'কি.মি', dep: 'ছাড়ার সময়', eco_class: 'সাধারণ', biz_class: 'ব্যবসায়িক',
+  },
+  kn: {
+    name: 'ಕನ್ನಡ', short: 'KN', flag: '🌐',
+    nav_menu: 'ಮೆನು',
+    nav_home: '🚌 ಬಸ್ ಮತ್ತು ರೈಲು ಸಮಯ',
+    nav_routes: '🗺️ ಮಾರ್ಗಗಳನ್ನು ಹುಡುಕಿ',
+    nav_planner: '🧭 ಪ್ರಯಾಣ ಯೋಜನೆ',
+    nav_alerts: '⚠️ ಸಮಸ್ಯೆಗಳು ಮತ್ತು ಸಹಾಯ',
+    nav_home_short: '🏠 ಮನೆ',
+    nav_routes_short: '🗺️ ಮಾರ್ಗಗಳು',
+    nav_planner_short: '🧭 ಯೋಜನೆ',
+    nav_alerts_short: '⚠️ ಎಚ್ಚರಿಕೆಗಳು',
+    eyebrow: 'ಭಾರತದ ಸಾರಿಗೆ ಮಾರ್ಗದರ್ಶಿ',
+    status_live: '✅ ಸಿಸ್ಟಮ್ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತಿದೆ',
+    filter_city: '🏙️ ನಿಮ್ಮ ನಗರ ಆಯ್ಕೆ ಮಾಡಿ',
+    city_all: 'ಇಡೀ ಭಾರತ',
+    city_intercity: 'ನಗರಗಳ ನಡುವೆ',
+    section_leaving: '🟢 ಶೀಘ್ರದಲ್ಲೇ ಹೊರಡುವ ಬಸ್ ಮತ್ತು ರೈಲುಗಳು',
+    loading_board: 'ಲೋಡ್ ಆಗುತ್ತಿದೆ...',
+    crowd_why: '💡 ನಾವು ಜನದಟ್ಟಣೆ ಹೇಗೆ ತಿಳಿಯುತ್ತೇವೆ?',
+    crowd_explain: 'ನಿಮ್ಮಂಥ ಪ್ರಯಾಣಿಕರ ವರದಿಗಳು ಮತ್ತು ಐತಿಹಾಸಿಕ ಡೇಟಾವನ್ನು ಸಂಯೋಜಿಸುತ್ತೇವೆ. ಇದು ಪ್ರತಿ 30 ಸೆಕೆಂಡ್‌ಗೆ ಅಪ್‌ಡೇಟ್ ಆಗುತ್ತದೆ.',
+    welcome_title: 'ಈ ಅಪ್ಲಿಕೇಶನ್ ಹೇಗೆ ಬಳಸಬೇಕು',
+    welcome_steps: '1️⃣ ನಿಮ್ಮ ನಗರ ಆಯ್ಕೆ ಮಾಡಿ → 2️⃣ ಮುಂದಿನ ಬಸ್ & ರೈಲು ನೋಡಿ → 3️⃣ "ಪ್ರಯಾಣ ಯೋಜನೆ" ಒತ್ತಿರಿ',
+    search_placeholder: '🔍 ನಗರ, ಬಸ್ ಅಥವಾ ರೈಲು ಹುಡುಕಿ...',
+    filter_all_states: 'ಎಲ್ಲಾ ರಾಜ್ಯಗಳು / ನೆಟ್‌ವರ್ಕ್‌ಗಳು',
+    metro_label: 'ಭಾರತದಾದ್ಯಂತ ಮೆಟ್ರೋ ಮಾರ್ಗಗಳು',
+    loading_routes: 'ಮಾರ್ಗಗಳು ಲೋಡ್ ಆಗುತ್ತಿವೆ...',
+    planner_title: '🧭 ನೀವು ಎಲ್ಲಿಗೆ ಹೋಗಲು ಬಯಸುತ್ತೀರಿ?',
+    planner_from: '📍 ಪ್ರಾರಂಭ ಸ್ಥಳ (ಉದಾ. ಅಂಧೇರಿ ನಿಲ್ದಾಣ)',
+    planner_to: '🏁 ಗಮ್ಯ (ಉದಾ. ದಾದರ್ ನಿಲ್ದಾಣ)',
+    planner_btn: '🔍 ಮಾರ್ಗಗಳನ್ನು ತೋರಿಸಿ',
+    planner_options: '🚌 ನಿಮ್ಮ ಮಾರ್ಗ ಆಯ್ಕೆಗಳು',
+    planner_hint: 'ಮೇಲೆ ಪ್ರಾರಂಭ ಮತ್ತು ಗಮ್ಯ ನಮೂದಿಸಿ, ನಂತರ ಮಾರ್ಗಗಳನ್ನು ತೋರಿಸಿ ಒತ್ತಿರಿ.',
+    popular_routes: '⭐ ಸಾಮಾನ್ಯ ಪ್ರಯಾಣಗಳು',
+    offline_title: '📵 ಇಂಟರ್ನೆಟ್ ಇಲ್ಲದೆ ಕೂಡ ಕೆಲಸ ಮಾಡುತ್ತದೆ',
+    offline_desc: 'ಬಸ್ & ರೈಲು ವೇಳಾಪಟ್ಟಿಗಳು ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ ಉಳಿಸಲ್ಪಟ್ಟಿವೆ.',
+    offline_pill: 'ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿ ಲಭ್ಯ',
+    alerts_current: '⚠️ ಪ್ರಸ್ತುತ ಸಮಸ್ಯೆಗಳು',
+    alerts_checking: 'ಸಮಸ್ಯೆಗಳನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ...',
+    report_title: '📢 ಏನಾದರೂ ತಪ್ಪಾ? ನಮಗೆ ತಿಳಿಸಿ!',
+    report_placeholder: 'ಉದಾ. ಬಸ್ 335A ಅಂಧೇರಿ ಬಳಿ ತುಂಬಾ ತಡವಾಗಿದೆ...',
+    report_btn: '📢 ವರದಿ ಕಳುಹಿಸಿ',
+    alert_prefs: '🔔 ಯಾವಾಗ ಸೂಚನೆ ಬೇಕು...',
+    pref1_title: 'ಬಸ್/ರೈಲು ತುಂಬಾ ತಡ (5+ ನಿಮಿಷ)',
+    pref1_sub: 'ನೀವು ಉಳಿಸಿದ ಮಾರ್ಗಗಳಲ್ಲಿ',
+    pref2_title: 'ಬಸ್‌ನಲ್ಲಿ ತುಂಬಾ ಜನ',
+    pref2_sub: 'ನಿಮ್ಮ ಸಾಮಾನ್ಯ ಹೊರಡುವ ಸಮಯಕ್ಕೆ 15 ನಿಮಿಷ ಮೊದಲು',
+    pref3_title: 'ಮಾರ್ಗ ಬದಲಾಗಿದೆ',
+    pref3_sub: 'ನಿಮ್ಮ ಹತ್ತಿರದ ಎಲ್ಲಾ ಮಾರ್ಗಗಳು',
+    lang_choose: 'ಭಾಷೆ ಆಯ್ಕೆ ಮಾಡಿ',
+    every_min: 'ಪ್ರತಿ', min_label: 'ನಿಮಿಷ', stops: 'ನಿಲ್ದಾಣಗಳು', fare: 'ದರ', km: 'ಕಿ.ಮೀ', dep: 'ಹೊರಡುವ ಸಮಯ', eco_class: 'ಸಾಮಾನ್ಯ', biz_class: 'ವ್ಯಾಪಾರ',
+  },
+  gu: {
+    name: 'ગુજરાતી', short: 'GU', flag: '🌐',
+    nav_menu: 'મેનૂ',
+    nav_home: '🚌 બસ અને ટ્રેન સમય',
+    nav_routes: '🗺️ માર્ગ શોધો',
+    nav_planner: '🧭 પ્રવાસ આયોજન',
+    nav_alerts: '⚠️ સમસ્યાઓ અને મદદ',
+    nav_home_short: '🏠 હોમ',
+    nav_routes_short: '🗺️ માર્ગ',
+    nav_planner_short: '🧭 આયોજન',
+    nav_alerts_short: '⚠️ ચેતવણી',
+    eyebrow: 'ભારતની પરિવહન માર્ગદર્શિકા',
+    status_live: '✅ સિસ્ટમ ચાલુ છે',
+    filter_city: '🏙️ તમારું શહેર પસંદ કરો',
+    city_all: 'સમગ્ર ભારત',
+    city_intercity: 'આંતર-શહેર',
+    section_leaving: '🟢 જલ્દી ઉપડતી બસ અને ટ્રેન',
+    loading_board: 'લોડ થઈ રહ્યું છે...',
+    crowd_why: '💡 અમે ભીડ કેવી રીતે જાણીએ છીએ?',
+    crowd_explain: 'તમારા જેવા મુસાફરોના અહેવાલો અને ઐતિહાસિક ડેટા ભેગા કરીએ છીએ. દર 30 સેકન્ડે અપડેટ થાય છે.',
+    welcome_title: 'આ એપ કેવી રીતે વાપરવી',
+    welcome_steps: '1️⃣ નીચે તમારું શહેર પસંદ કરો → 2️⃣ આગળની બસ & ટ્રેન જુઓ → 3️⃣ "પ્રવાસ આયોજન" ટૅપ કરો',
+    search_placeholder: '🔍 શહેર, બસ અથવા ટ્રેન શોધો...',
+    filter_all_states: 'બધા રાજ્યો / નેટવર્ક',
+    metro_label: 'ભારતમાં મેટ્રો લાઇનો',
+    loading_routes: 'માર્ગ લોડ થઈ રહ્યા છે...',
+    planner_title: '🧭 તમે ક્યાં જવા માગો છો?',
+    planner_from: '📍 શરૂઆતનું સ્થળ (ઉ.દા. અંધેરી સ્ટેશન)',
+    planner_to: '🏁 ગંતવ્ય (ઉ.દા. દાદર સ્ટેશન)',
+    planner_btn: '🔍 માર્ગ બતાવો',
+    planner_options: '🚌 તમારા માર્ગ વિકલ્પો',
+    planner_hint: 'ઉપર શરૂઆત અને ગંતવ્ય ભરો, પછી માર્ગ બતાવો ટૅપ કરો.',
+    popular_routes: '⭐ સામાન્ય પ્રવાસ',
+    offline_title: '📵 ઇન્ટરનેટ વિના પણ કામ કરે છે',
+    offline_desc: 'બસ & ટ્રેનના સમયપત્રક તમારા ફોનમાં સેવ છે.',
+    offline_pill: 'ઑફલાઇન ઉપલબ્ધ',
+    alerts_current: '⚠️ વર્તમાન સમસ્યાઓ',
+    alerts_checking: 'સમસ્યાઓ ચકાસવામાં આવી રહી છે...',
+    report_title: '📢 કંઈ ખોટું છે? અમને જણાવો!',
+    report_placeholder: 'ઉ.દા. બસ 335A અંધેરી પાસે ખૂબ મોડી છે...',
+    report_btn: '📢 અહેવાલ મોકલો',
+    alert_prefs: '🔔 ક્યારે સૂચના મળે...',
+    pref1_title: 'બસ/ટ્રેન ઘણી મોડી (5+ મિનિટ)',
+    pref1_sub: 'તમારા સેવ કરેલ માર્ગો પર',
+    pref2_title: 'બસ ઘણી ભીડ',
+    pref2_sub: 'તમારા સામાન્ય ઉડ્ડાણ 15 મિનિટ પહેલા',
+    pref3_title: 'માર્ગ બદલાઈ ગયો',
+    pref3_sub: 'તમારી નજીકના બધા માર્ગ',
+    lang_choose: 'ભાષા પસંદ કરો',
+    every_min: 'દર', min_label: 'મિનિટ', stops: 'સ્ટૉપ', fare: 'ભાડું', km: 'કિ.મી', dep: 'ઉડ્ડાણ', eco_class: 'સામાન્ય', biz_class: 'વ્યાપાર',
+  }
+};
+
+let currentLang = 'en';
+
+// Apply all translations to the page
+function applyTranslations(lang) {
+  const T = LANGS[lang] || LANGS.en;
+  currentLang = lang;
+
+  // Update all [data-i18n] text elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (T[key] !== undefined) el.innerHTML = T[key];
+  });
+
+  // Update all [data-i18n-placeholder] inputs/textareas
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (T[key] !== undefined) el.placeholder = T[key];
+  });
+
+  // Update language button
+  const flag = T.flag || '🇮🇳';
+  document.getElementById('langBtnFlag').textContent = flag;
+  document.getElementById('langBtnLabel').textContent = T.name;
+  document.getElementById('mobileLangFlag').textContent = flag;
+  document.getElementById('mobileLangLabel').textContent = T.short;
+
+  // Update the page title in topbar
+  const topbarTitle = document.getElementById('topbarTitle');
+  const activeTab = document.querySelector('.nav-btn.active');
+  if (activeTab) {
+    const tab = activeTab.dataset.tab;
+    const titleMap = { home: 'nav_home', routes: 'nav_routes', planner: 'nav_planner', alerts: 'nav_alerts' };
+    if (titleMap[tab] && T[titleMap[tab]]) topbarTitle.innerHTML = T[titleMap[tab]];
+  }
+
+  // Highlight active lang option
+  document.querySelectorAll('.lang-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.lang === lang);
+  });
+
+  // Update CROWD labels with translated versions
+  CROWD.LOW.label    = lang === 'en' ? '😊 Comfortable' : lang === 'hi' ? '😊 आरामदायक' : lang === 'mr' ? '😊 आरामदायक' : lang === 'ta' ? '😊 வசதியான' : lang === 'te' ? '😊 సౌకర్యంగా' : lang === 'bn' ? '😊 আরামদায়ক' : lang === 'kn' ? '😊 ಆರಾಮದಾಯಕ' : '😊 આરામદાયક';
+  CROWD.MEDIUM.label = lang === 'en' ? '🙂 Getting Busy' : lang === 'hi' ? '🙂 भीड़ बढ़ रही है' : lang === 'mr' ? '🙂 गर्दी वाढतेय' : lang === 'ta' ? '🙂 நெரிசல் ஆகுது' : lang === 'te' ? '🙂 రద్దీ పెరుగుతోంది' : lang === 'bn' ? '🙂 ভিড় বাড়ছে' : lang === 'kn' ? '🙂 ಜನ ಹೆಚ್ಚುತ್ತಿದ್ದಾರೆ' : '🙂 ભીડ વધી રही છે';
+  CROWD.HIGH.label   = lang === 'en' ? '😰 Very Crowded' : lang === 'hi' ? '😰 बहुत भीड़' : lang === 'mr' ? '😰 खूप गर्दी' : lang === 'ta' ? '😰 மிகவும் நெரிசல்' : lang === 'te' ? '😰 చాలా రద్దీ' : lang === 'bn' ? '😰 অনেক ভিড়' : lang === 'kn' ? '😰 ತುಂಬಾ ಜನ' : '😰 ઘણી ભીડ';
+
+  // Re-render the board to pick up new CROWD labels
+  renderBoard();
+
+  // Save preference
+  try { localStorage.setItem('trassit_lang', lang); } catch(e) {}
+}
+
+// Language dropdown toggle
+function toggleLangDropdown(e) {
+  e.stopPropagation();
+  const dropdown = document.getElementById('langDropdown');
+  const overlay  = document.getElementById('langOverlay');
+  const isOpen   = dropdown.classList.contains('open');
+  dropdown.classList.toggle('open', !isOpen);
+  overlay.classList.toggle('open', !isOpen);
+}
+
+function closeLangDropdown() {
+  document.getElementById('langDropdown').classList.remove('open');
+  document.getElementById('langOverlay').classList.remove('open');
+}
+
+// Set language and close dropdown
+function setLanguage(lang) {
+  applyTranslations(lang);
+  closeLangDropdown();
+
+  // Also update topbar title with correct tab name
+  const titleMap = { home:'nav_home', routes:'nav_routes', planner:'nav_planner', alerts:'nav_alerts' };
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    if (btn.classList.contains('active')) {
+      const T = LANGS[lang] || LANGS.en;
+      const key = titleMap[btn.dataset.tab];
+      if (key) document.getElementById('topbarTitle').innerHTML = T[key] || '';
+    }
+  });
+}
+
+
+
+
+// Boot: load saved language or default to English
+(function initLang() {
+  let saved = 'en';
+  try { saved = localStorage.getItem('trassit_lang') || 'en'; } catch(e) {}
+  if (LANGS[saved]) applyTranslations(saved);
+  else applyTranslations('en');
+})();
+
+// ── Google Maps Integration & Map Rendering ──
+let googleMap = null;
+let mapMarkers = [];
+let mapPolylines = [];
+
+// Load Google Maps SDK
+async function loadGoogleMaps() {
+  try {
+    const res = await fetch('/api/v1/config');
+    const config = await res.json();
+    if (!config.success || !config.googleMapsApiKey) {
+      console.warn("[Google Maps] API Key not found or invalid config");
+      document.getElementById('planner-map').innerHTML = `<div style="padding: 24px; text-align: center; color: var(--high); line-height: 300px;">Google Maps API Key not configured.</div>`;
+      return;
+    }
+
+    const key = config.googleMapsApiKey;
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places,geometry`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => {
+      initGoogleMapAndAutocomplete();
+    };
+    script.onerror = () => {
+      console.error("[Google Maps] Failed to load SDK script");
+      document.getElementById('planner-map').innerHTML = `<div style="padding: 24px; text-align: center; color: var(--high); line-height: 300px;">Failed to load Google Maps SDK.</div>`;
+    };
+    document.head.appendChild(script);
+  } catch (err) {
+    console.error("[Google Maps] Initialization failed:", err);
+  }
+}
+
+// Initialize Map & Setup Autocomplete
+function initGoogleMapAndAutocomplete() {
+  const mapEl = document.getElementById('planner-map');
+  if (!mapEl) return;
+
+  // Custom premium dark theme matching Trassit style
+  const darkMapStyle = [
+    { elementType: "geometry", stylers: [{ color: "#0f1119" }] },
+    { elementType: "labels.text.stroke", stylers: [{ color: "#0f1119" }] },
+    { elementType: "labels.text.fill", stylers: [{ color: "#565e73" }] },
+    { featureType: "administrative.locality", elementType: "labels.text.fill", stylers: [{ color: "#edeff5" }] },
+    { featureType: "poi", elementType: "labels.text.fill", stylers: [{ color: "#8b93a8" }] },
+    { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#15181f" }] },
+    { featureType: "poi.park", elementType: "labels.text.fill", stylers: [{ color: "#565e73" }] },
+    { featureType: "road", elementType: "geometry", stylers: [{ color: "#1b1f2b" }] },
+    { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#2c3244" }] },
+    { featureType: "road", elementType: "labels.text.fill", stylers: [{ color: "#8b93a8" }] },
+    { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#232838" }] },
+    { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#2c3244" }] },
+    { featureType: "road.highway", elementType: "labels.text.fill", stylers: [{ color: "#ffb627" }] },
+    { featureType: "transit", elementType: "geometry", stylers: [{ color: "#15181f" }] },
+    { featureType: "transit.station", elementType: "labels.text.fill", stylers: [{ color: "#ffb627" }] },
+    { featureType: "water", elementType: "geometry", stylers: [{ color: "#0f172a" }] },
+    { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#565e73" }] }
+  ];
+
+  googleMap = new google.maps.Map(mapEl, {
+    center: { lat: 19.1136, lng: 72.8696 }, // Mumbai center default
+    zoom: 11,
+    styles: darkMapStyle,
+    disableDefaultUI: true,
+    zoomControl: true
+  });
+
+  // Setup custom geocoder-based autocomplete for inputs
+  setupCustomAutocomplete(document.getElementById('originInput'));
+  setupCustomAutocomplete(document.getElementById('destInput'));
+}
+// ── Comprehensive India Places DB (no API needed) ──
+const INDIA_PLACES = [
+  // Metro cities
+  { name: 'Mumbai',            coords: '19.0760,72.8777',  aliases: ['bombay','mumbai city'] },
+  { name: 'Andheri',           coords: '19.1136,72.8697',  aliases: ['andheri west','andheri east'] },
+  { name: 'Bandra',            coords: '19.0596,72.8295',  aliases: ['bandra west','bandra east'] },
+  { name: 'Dadar',             coords: '19.0178,72.8478',  aliases: ['dadar west','dadar east','dadar station'] },
+  { name: 'Kurla',             coords: '19.0651,72.8784',  aliases: ['kurla west','kurla east'] },
+  { name: 'Thane',             coords: '19.2183,72.9781',  aliases: [] },
+  { name: 'Navi Mumbai',       coords: '19.0330,73.0297',  aliases: ['new mumbai','vashi','belapur'] },
+  { name: 'Borivali',          coords: '19.2288,72.8576',  aliases: [] },
+  { name: 'Malad',             coords: '19.1871,72.8484',  aliases: [] },
+  { name: 'Goregaon',          coords: '19.1663,72.8526',  aliases: [] },
+  { name: 'Kandivali',         coords: '19.2052,72.8561',  aliases: [] },
+  { name: 'Ghatkopar',         coords: '19.0863,72.9083',  aliases: [] },
+  { name: 'Mulund',            coords: '19.1722,72.9567',  aliases: [] },
+  { name: 'Chembur',           coords: '19.0626,72.8994',  aliases: [] },
+  { name: 'Colaba',            coords: '18.9067,72.8147',  aliases: ['gateway of india'] },
+  { name: 'CST',               coords: '18.9401,72.8356',  aliases: ['chhatrapati shivaji terminus','victoria terminus','vt'] },
+  { name: 'Lower Parel',       coords: '18.9955,72.8298',  aliases: ['parel'] },
+  { name: 'Worli',             coords: '19.0096,72.8178',  aliases: [] },
+  { name: 'Versova',           coords: '19.1347,72.8144',  aliases: [] },
+  { name: 'Powai',             coords: '19.1176,72.9060',  aliases: [] },
+  // Pune
+  { name: 'Pune',              coords: '18.5204,73.8567',  aliases: ['poona'] },
+  { name: 'Swargate',          coords: '18.5018,73.8629',  aliases: ['swargate bus stand'] },
+  { name: 'Shivajinagar',      coords: '18.5302,73.8473',  aliases: ['shivajinagar station'] },
+  { name: 'Hinjawadi',         coords: '18.5912,73.7389',  aliases: [] },
+  { name: 'Kothrud',           coords: '18.5074,73.8077',  aliases: [] },
+  { name: 'Wakad',             coords: '18.5991,73.7601',  aliases: [] },
+  { name: 'Baner',             coords: '18.5590,73.7868',  aliases: [] },
+  { name: 'Pimpri Chinchwad',  coords: '18.6279,73.8009',  aliases: ['pcmc','pimpri','pimprichinchwad'] },
+  { name: 'Chinchwad',         coords: '18.6222,73.7785',  aliases: ['chinchwad station','chinchwad junction'] },
+  { name: 'Nigdi',             coords: '18.6487,73.7762',  aliases: ['nigdi bus terminus','nigdiganesh','nigdi prerna'] },
+  { name: 'Rahatni',           coords: '18.6227,73.7916',  aliases: ['rahatni chowk','rahatni bus stop','rahatni pc'] },
+  { name: 'Kokane Chowk',      coords: '18.5910,73.7972',  aliases: ['kokane','kokane chowk rahatni','kokane square'] },
+  { name: 'Akurdi',            coords: '18.6487,73.7638',  aliases: ['akurdi station','akrudi'] },
+  { name: 'Pradhikaran',       coords: '18.6544,73.7905',  aliases: ['new pradhikaran','pradhikaran nigdi'] },
+  { name: 'Sangvi',            coords: '18.6003,73.8037',  aliases: ['new sangvi','sangvi pc'] },
+  { name: 'Jagtap Dairy',      coords: '18.5950,73.7850',  aliases: ['jagtap dairy chowk','jagtap'] },
+  { name: 'Bijali Nagar',      coords: '18.6434,73.7712',  aliases: ['bijalinagar','bijali nagar chowk'] },
+  { name: 'Bhosari',           coords: '18.6125,73.8488',  aliases: ['bhosari chowk'] },
+  { name: 'Chikhali',          coords: '18.6649,73.8067',  aliases: ['chikhali pc'] },
+  { name: 'Moshi',             coords: '18.6706,73.8532',  aliases: ['moshi toll plaza','moshi chowk'] },
+  { name: 'Dehu Road',         coords: '18.6817,73.7542',  aliases: ['dehu road camp','dehu'] },
+  { name: 'Chakan',            coords: '18.7562,73.8504',  aliases: ['chakan chowk','chakan junction'] },
+  { name: 'Rajgurunagar',      coords: '18.8550,73.8860',  aliases: ['rajgugrunagar','khed','rajgurunagar bus stand'] },
+  { name: 'Nashik',            coords: '20.0059,73.7912',  aliases: [] },
+  { name: 'Nagpur',            coords: '21.1458,79.0882',  aliases: [] },
+  { name: 'Aurangabad',        coords: '19.8762,75.3433',  aliases: ['sambhajinagar'] },
+  { name: 'Kolhapur',          coords: '16.6975,74.2289',  aliases: [] },
+  { name: 'Solapur',           coords: '17.6599,75.9064',  aliases: [] },
+  // Delhi NCR
+  { name: 'Delhi',             coords: '28.6139,77.2090',  aliases: ['new delhi','dilli'] },
+  { name: 'Connaught Place',   coords: '28.6329,77.2197',  aliases: ['cp','rajiv chowk'] },
+  { name: 'Karol Bagh',        coords: '28.6520,77.1876',  aliases: [] },
+  { name: 'Dwarka',            coords: '28.5965,77.0455',  aliases: [] },
+  { name: 'Noida',             coords: '28.5355,77.3910',  aliases: [] },
+  { name: 'Gurgaon',           coords: '28.4595,77.0266',  aliases: ['gurugram'] },
+  { name: 'Faridabad',         coords: '28.4089,77.3178',  aliases: [] },
+  { name: 'Ghaziabad',         coords: '28.6692,77.4538',  aliases: [] },
+  { name: 'IARI',              coords: '28.6388,77.1509',  aliases: [] },
+  { name: 'Vasant Vihar',      coords: '28.5710,77.1614',  aliases: [] },
+  { name: 'Nehru Place',       coords: '28.5494,77.2522',  aliases: [] },
+  { name: 'Lajpat Nagar',      coords: '28.5679,77.2430',  aliases: [] },
+  // Bengaluru
+  { name: 'Bengaluru',         coords: '12.9716,77.5946',  aliases: ['bangalore','blr'] },
+  { name: 'Whitefield',        coords: '12.9698,77.7500',  aliases: [] },
+  { name: 'Koramangala',       coords: '12.9352,77.6245',  aliases: [] },
+  { name: 'Indiranagar',       coords: '12.9784,77.6408',  aliases: [] },
+  { name: 'HSR Layout',        coords: '12.9116,77.6389',  aliases: [] },
+  { name: 'Majestic',          coords: '12.9767,77.5713',  aliases: ['kempegowda bus stand'] },
+  { name: 'MG Road',           coords: '12.9758,77.6097',  aliases: [] },
+  { name: 'Electronic City',   coords: '12.8389,77.6770',  aliases: [] },
+  // Kolkata
+  { name: 'Kolkata',           coords: '22.5726,88.3639',  aliases: ['calcutta'] },
+  { name: 'Howrah',            coords: '22.5958,88.2636',  aliases: ['howrah station'] },
+  { name: 'Sealdah',           coords: '22.5642,88.3697',  aliases: ['sealdah station'] },
+  { name: 'Park Street',       coords: '22.5530,88.3526',  aliases: [] },
+  { name: 'Salt Lake',         coords: '22.5782,88.4191',  aliases: ['bidhannagar','sector v'] },
+  { name: 'New Town',          coords: '22.5966,88.4660',  aliases: ['rajarhat'] },
+  // Chennai
+  { name: 'Chennai',           coords: '13.0827,80.2707',  aliases: ['madras'] },
+  { name: 'Anna Nagar',        coords: '13.0850,80.2101',  aliases: [] },
+  { name: 'T Nagar',           coords: '13.0396,80.2337',  aliases: ['thyagaraya nagar'] },
+  { name: 'Adyar',             coords: '13.0067,80.2574',  aliases: [] },
+  { name: 'Tambaram',          coords: '12.9249,80.1000',  aliases: [] },
+  { name: 'Guindy',            coords: '13.0087,80.2206',  aliases: [] },
+  { name: 'Central Station',   coords: '13.0827,80.2753',  aliases: ['chennai central','mgr chennai central'] },
+  // Hyderabad
+  { name: 'Hyderabad',         coords: '17.3850,78.4867',  aliases: [] },
+  { name: 'Secunderabad',      coords: '17.4399,78.4983',  aliases: [] },
+  { name: 'Hitech City',       coords: '17.4435,78.3772',  aliases: ['madhapur'] },
+  { name: 'Gachibowli',        coords: '17.4400,78.3489',  aliases: [] },
+  { name: 'Charminar',         coords: '17.3616,78.4747',  aliases: [] },
+  // Ahmedabad
+  { name: 'Ahmedabad',         coords: '23.0225,72.5714',  aliases: ['amdavad'] },
+  { name: 'Surat',             coords: '21.1702,72.8311',  aliases: [] },
+  { name: 'Vadodara',          coords: '22.3072,73.1812',  aliases: ['baroda'] },
+  { name: 'Rajkot',            coords: '22.3039,70.8022',  aliases: [] },
+  // Other major cities
+  { name: 'Jaipur',            coords: '26.9124,75.7873',  aliases: ['pink city'] },
+  { name: 'Lucknow',           coords: '26.8467,80.9462',  aliases: [] },
+  { name: 'Kanpur',            coords: '26.4499,80.3319',  aliases: [] },
+  { name: 'Patna',             coords: '25.5941,85.1376',  aliases: [] },
+  { name: 'Bhopal',            coords: '23.2599,77.4126',  aliases: [] },
+  { name: 'Indore',            coords: '22.7196,75.8577',  aliases: [] },
+  { name: 'Chandigarh',        coords: '30.7333,76.7794',  aliases: [] },
+  { name: 'Amritsar',          coords: '31.6340,74.8723',  aliases: [] },
+  { name: 'Kochi',             coords: '9.9312,76.2673',   aliases: ['cochin','ernakulam'] },
+  { name: 'Thiruvananthapuram', coords: '8.5241,76.9366',  aliases: ['trivandrum'] },
+  { name: 'Visakhapatnam',     coords: '17.6868,83.2185',  aliases: ['vizag'] },
+  { name: 'Coimbatore',        coords: '11.0168,76.9558',  aliases: ['kovai'] },
+  { name: 'Madurai',           coords: '9.9252,78.1198',   aliases: [] },
+  { name: 'Bhubaneswar',       coords: '20.2961,85.8245',  aliases: [] },
+  { name: 'Guwahati',          coords: '26.1445,91.7362',  aliases: [] },
+  { name: 'Varanasi',          coords: '25.3176,82.9739',  aliases: ['banaras','kashi'] },
+  { name: 'Agra',              coords: '27.1767,78.0081',  aliases: [] },
+  { name: 'Vadodara',          coords: '22.3072,73.1812',  aliases: [] },
+  { name: 'Ranchi',            coords: '23.3441,85.3096',  aliases: [] },
+  { name: 'Raipur',            coords: '21.2514,81.6296',  aliases: [] },
+  { name: 'Srinagar',          coords: '34.0837,74.7973',  aliases: [] },
+  { name: 'Dehradun',          coords: '30.3165,78.0322',  aliases: [] },
+  { name: 'Shimla',            coords: '31.1048,77.1734',  aliases: [] },
+  { name: 'Mysuru',            coords: '12.2958,76.6394',  aliases: ['mysore'] },
+  { name: 'Mangaluru',         coords: '12.9141,74.8560',  aliases: ['mangalore'] },
+  { name: 'Hubli',             coords: '15.3647,75.1240',  aliases: ['hubballi'] },
+  { name: 'Vijayawada',        coords: '16.5062,80.6480',  aliases: [] },
+  { name: 'Tirupati',          coords: '13.6288,79.4192',  aliases: [] },
+  { name: 'Puducherry',        coords: '11.9416,79.8083',  aliases: ['pondicherry'] }
+];
+
+// Purely local autocomplete — no external API calls required
+function setupCustomAutocomplete(inputEl) {
+  // Clear stale default data-latlng when user starts typing
+  inputEl.addEventListener('keydown', () => {
+    // Remove cached coords so user must re-select
+    inputEl.removeAttribute('data-latlng');
+  });
+
+  // Set parent field container relative for dropdown positioning
+  inputEl.parentElement.style.position = 'relative';
+
+  // Build the dropdown container
+  const dd = document.createElement('div');
+  dd.style.cssText = [
+    'position:absolute', 'top:calc(100% + 4px)', 'left:-14px', 'right:-14px',
+    'background:#1a1e2d', 'border:1px solid #2c3244', 'border-radius:10px',
+    'max-height:220px', 'overflow-y:auto', 'z-index:99999',
+    'display:none', 'box-shadow:0 8px 24px rgba(0,0,0,0.55)'
+  ].join(';');
+  inputEl.parentElement.appendChild(dd);
+
+  function showSuggestions(val) {
+    const q = val.trim().toLowerCase();
+    if (q.length < 2) { dd.innerHTML=''; dd.style.display='none'; return; }
+    const matches = INDIA_PLACES.filter(p => {
+      if (p.name.toLowerCase().includes(q)) return true;
+      if (p.aliases && p.aliases.some(a => a.includes(q))) return true;
+      return false;
+    }).slice(0, 10);
+
+    dd.innerHTML = '';
+    if (!matches.length) { dd.style.display='none'; return; }
+
+    dd.style.display = 'block';
+    matches.forEach((place, i) => {
+      const item = document.createElement('div');
+      item.textContent = place.name;
+      item.style.cssText = [
+        'padding:10px 14px', 'cursor:pointer', 'font-size:13.5px',
+        'color:#edeff5', 'transition:background .15s',
+        i < matches.length - 1 ? 'border-bottom:1px solid #252840' : ''
+      ].join(';');
+      item.addEventListener('mouseenter', () => item.style.background = '#252840');
+      item.addEventListener('mouseleave', () => item.style.background = '');
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault(); // prevent blur before click fires
+        inputEl.value = place.name;
+        inputEl.setAttribute('data-latlng', place.coords);
+        dd.style.display = 'none';
+        // Pan the Google Map if it's ready
+        if (googleMap) {
+          const [lat, lng] = place.coords.split(',').map(Number);
+          googleMap.setCenter(new google.maps.LatLng(lat, lng));
+          googleMap.setZoom(12);
+        }
+      });
+      dd.appendChild(item);
+    });
+  }
+
+  inputEl.addEventListener('input', () => showSuggestions(inputEl.value));
+  inputEl.addEventListener('focus', () => showSuggestions(inputEl.value));
+  inputEl.addEventListener('blur', () => setTimeout(() => { dd.style.display='none'; }, 150));
+}
+
+// Draw polyline paths on the map
+function drawRouteOnMap(legs) {
+  // Clear existing markers & polylines
+  mapMarkers.forEach(m => m.setMap(null));
+  mapPolylines.forEach(p => p.setMap(null));
+  mapMarkers = [];
+  mapPolylines = [];
+
+  if (!googleMap || !legs || legs.length === 0) return;
+
+  const bounds = new google.maps.LatLngBounds();
+
+  legs.forEach((leg, index) => {
+    let path = [];
+    if (leg.polyline) {
+      path = google.maps.geometry.encoding.decodePath(leg.polyline);
+    } else if (leg.startCoords && leg.endCoords) {
+      path = [
+        new google.maps.LatLng(leg.startCoords.lat, leg.startCoords.lon),
+        new google.maps.LatLng(leg.endCoords.lat, leg.endCoords.lon)
+      ];
+    }
+
+    const strokeColor = leg.mode === 'TRANSIT' ? '#FFB627' : leg.mode === 'SCOOTER' ? '#3ED692' : '#4DA8FF';
+
+    if (path.length > 0) {
+      const poly = new google.maps.Polyline({
+        path: path,
+        geodesic: true,
+        strokeColor: strokeColor,
+        strokeOpacity: 0.8,
+        strokeWeight: 5,
+        map: googleMap
+      });
+      mapPolylines.push(poly);
+      path.forEach(pt => bounds.extend(pt));
+    }
+
+    // Add marker for start position of the first leg
+    if (index === 0 && path.length > 0) {
+      const startMarker = new google.maps.Marker({
+        position: path[0],
+        map: googleMap,
+        title: "Start Origin",
+        icon: {
+          url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+        }
+      });
+      mapMarkers.push(startMarker);
+      bounds.extend(path[0]);
+    }
+
+    // Add marker for end position of the last leg
+    if (index === legs.length - 1 && path.length > 0) {
+      const endMarker = new google.maps.Marker({
+        position: path[path.length - 1],
+        map: googleMap,
+        title: "Destination",
+        icon: {
+          url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png"
+        }
+      });
+      mapMarkers.push(endMarker);
+      bounds.extend(path[path.length - 1]);
+    }
+  });
+
+  googleMap.fitBounds(bounds);
+}
+
+// Trigger Google Maps load on boot
+loadGoogleMaps();
+</script>
+
+</body>
+</html>
